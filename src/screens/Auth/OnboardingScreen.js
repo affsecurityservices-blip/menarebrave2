@@ -16,6 +16,9 @@ export default function OnboardingScreen({ navigation }) {
           <Text style={[styles.signalLogo, { color: colors.accent, fontFamily: typography.fontFamily.header }]}>
             MAB
           </Text>
+          <Text style={[styles.signalSubText, { color: colors.accent, fontFamily: typography.fontFamily.header }]}>
+            MEN ARE BRAVE
+          </Text>
         </View>
 
         <Text style={[styles.title, {
@@ -72,9 +75,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   signalCircle: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: 140,
+    height: 140,
+    borderRadius: 70,
     borderWidth: 3,
     alignItems: 'center',
     justifyContent: 'center',
@@ -86,9 +89,17 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   signalLogo: {
-    fontSize: 32,
+    fontSize: 30,
     fontWeight: '900',
     letterSpacing: 2,
+    lineHeight: 34,
+  },
+  signalSubText: {
+    fontSize: 9,
+    fontWeight: '900',
+    letterSpacing: 1,
+    marginTop: 2,
+    textAlign: 'center',
   },
   title: {
     textAlign: 'center',
