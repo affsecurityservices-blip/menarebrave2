@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Image, Dimensions, Platform } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import Button from '../../components/common/Button';
 
@@ -82,11 +82,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 40,
-    shadowColor: '#FFD100',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 8,
+    ...Platform.select({
+      web: {
+        boxShadow: '0px 4px 10px rgba(255, 209, 0, 0.3)',
+      },
+      default: {
+        shadowColor: '#FFD100',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
+        elevation: 8,
+      },
+    }),
   },
   signalLogo: {
     fontSize: 30,
