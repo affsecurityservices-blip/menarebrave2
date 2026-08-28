@@ -68,7 +68,7 @@ export default function CrisisSupportScreen() {
 
       <View style={[styles.notice, { backgroundColor: colors.surfaceLight, padding: spacing.md, borderRadius: spacing.borderRadius.xs, marginVertical: spacing.xl }]}>
         <Text style={[styles.noticeText, { color: colors.textSecondary, fontFamily: typography.fontFamily.body, fontSize: typography.sizes.xs, textAlign: 'center', lineHeight: 18 }]}>
-          "VEER is a peer-support platform, not a medical or clinical crisis provider. If you are experiencing a life-threatening crisis, call emergency services directly."
+          "Men Are Brave (MAB) is a peer-support platform, not a medical or clinical crisis provider. If you are experiencing a life-threatening crisis, call emergency services directly."
         </Text>
       </View>
     </ScrollView>

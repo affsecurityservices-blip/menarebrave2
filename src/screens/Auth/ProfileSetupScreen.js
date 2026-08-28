@@ -29,7 +29,7 @@ export default function ProfileSetupScreen({ navigation }) {
     });
     completeOnboarding();
     // Auto-login or navigate to Signup/Login
-    await login(username ? `${username}@veer.com` : 'anonymous@veer.com', 'dummyPassword');
+    await login(username ? `${username}@mab.com` : 'anonymous@mab.com', 'dummyPassword');
   };
 
   return (

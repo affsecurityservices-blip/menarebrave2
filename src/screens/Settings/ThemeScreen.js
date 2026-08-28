@@ -100,7 +100,7 @@ export default function ThemeScreen() {
           <MaterialCommunityIcons name="white-balance-sunny" size={24} color="#D49B00" />
           <View style={{ marginLeft: 12, flex: 1, paddingRight: 8 }}>
             <Text style={[styles.optionLabel, { color: colors.textPrimary, fontFamily: typography.fontFamily.header, fontSize: typography.sizes.md }]}>
-              VEER LIGHT (GOLDEN AMBER)
+              MAB LIGHT (GOLDEN AMBER)
             </Text>
             <Text style={[styles.optionDesc, { color: colors.textSecondary, fontFamily: typography.fontFamily.body, fontSize: typography.sizes.xs }]}>
               Clean white & soft grey surfaces with golden accents.

@@ -14,7 +14,7 @@ export default function OnboardingScreen({ navigation }) {
         {/* Bat emblem outline/signal metaphor using Text/Icons */}
         <View style={[styles.signalCircle, { borderColor: colors.accent }]}>
           <Text style={[styles.signalLogo, { color: colors.accent, fontFamily: typography.fontFamily.header }]}>
-            VEER
+            MAB
           </Text>
         </View>
 
