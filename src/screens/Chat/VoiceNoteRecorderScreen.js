@@ -22,7 +22,7 @@ export default function VoiceNoteRecorderScreen({ navigation }) {
 
   const handleSend = () => {
     toast.success('Voice message disguised and dispatched.');
-    navigation.goBack();
+    navigation.navigate('ChatRoom', { voiceNoteDuration: duration });
   };
 
   return (

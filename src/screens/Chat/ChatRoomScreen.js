@@ -5,8 +5,49 @@ import InputField from '../../components/common/InputField';
 import Button from '../../components/common/Button';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
+function VoiceMessagePlayer({ duration, colors, spacing, typography }) {
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  return (
+    <View style={styles.voicePlayer}>
+      <TouchableOpacity
+        onPress={() => setIsPlaying(!isPlaying)}
+        style={[styles.playBtn, { backgroundColor: colors.accent }]}
+        activeOpacity={0.8}
+      >
+        <MaterialCommunityIcons
+          name={isPlaying ? 'pause' : 'play'}
+          size={18}
+          color={colors.background}
+        />
+      </TouchableOpacity>
+      
+      <View style={styles.voiceDetails}>
+        <View style={styles.waveform}>
+          {[4, 12, 8, 16, 10, 6, 14, 8, 12, 4].map((h, i) => (
+            <View
+              key={i}
+              style={[
+                styles.waveBar,
+                {
+                  height: h,
+                  backgroundColor: isPlaying ? colors.accent : colors.textSecondary,
+                  opacity: isPlaying ? 1 : 0.6,
+                }
+              ]}
+            />
+          ))}
+        </View>
+        <Text style={[styles.voiceMeta, { color: colors.textSecondary, fontFamily: typography.fontFamily.body, fontSize: 10 }]}>
+          {duration} • DISGUISED PITCH
+        </Text>
+      </View>
+    </View>
+  );
+}
+
 export default function ChatRoomScreen({ route, navigation }) {
-  const { name = 'Room' } = route.params || {};
+  const { name = 'Room', voiceNoteDuration } = route.params || {};
   const { colors, typography, spacing } = useTheme();
 
   const [message, setMessage] = useState('');
@@ -14,6 +55,23 @@ export default function ChatRoomScreen({ route, navigation }) {
     { id: '1', text: 'Welcome, brother. Feel free to talk.', sender: 'other', time: '10:00 AM' },
     { id: '2', text: 'Thanks. Carrying some weight.', sender: 'me', time: '10:05 AM' },
   ]);
+
+  React.useEffect(() => {
+    if (voiceNoteDuration) {
+      const newMsg = {
+        id: `voice_${Date.now()}`,
+        text: `Voice Metaphor (${voiceNoteDuration})`,
+        type: 'voice',
+        duration: voiceNoteDuration,
+        sender: 'me',
+        time: 'Just now',
+      };
+      setMessages((prev) => [...prev, newMsg]);
+      
+      // Clear parameter to avoid duplicating on focus/re-render
+      navigation.setParams({ voiceNoteDuration: undefined });
+    }
+  }, [voiceNoteDuration]);
 
   const handleSend = () => {
     if (!message.trim()) return;
@@ -29,6 +87,7 @@ export default function ChatRoomScreen({ route, navigation }) {
 
   const renderItem = ({ item }) => {
     const isMe = item.sender === 'me';
+    const isVoice = item.type === 'voice';
     return (
       <View style={[
         styles.messageBubble,
@@ -41,11 +100,16 @@ export default function ChatRoomScreen({ route, navigation }) {
           padding: spacing.md,
           marginBottom: spacing.sm,
           maxWidth: '80%',
+          minWidth: isVoice ? 200 : 0,
         }
       ]}>
-        <Text style={[styles.messageText, { color: colors.textPrimary, fontFamily: typography.fontFamily.body, fontSize: typography.sizes.sm }]}>
-          {item.text}
-        </Text>
+        {isVoice ? (
+          <VoiceMessagePlayer duration={item.duration} colors={colors} spacing={spacing} typography={typography} />
+        ) : (
+          <Text style={[styles.messageText, { color: colors.textPrimary, fontFamily: typography.fontFamily.body, fontSize: typography.sizes.sm }]}>
+            {item.text}
+          </Text>
+        )}
         <Text style={[styles.time, { color: colors.textSecondary, fontFamily: typography.fontFamily.body, fontSize: 10, alignSelf: 'flex-end', marginTop: 4 }]}>
           {item.time}
         </Text>
@@ -127,5 +191,36 @@ const styles = StyleSheet.create({
   sendBtn: {
     height: 48,
     paddingHorizontal: 16,
+  },
+  voicePlayer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginVertical: 4,
+  },
+  playBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  voiceDetails: {
+    flex: 1,
+  },
+  waveform: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    height: 20,
+    marginBottom: 2,
+  },
+  waveBar: {
+    width: 3,
+    borderRadius: 1.5,
+  },
+  voiceMeta: {
+    fontWeight: '600',
+    letterSpacing: 0.5,
   },
 });

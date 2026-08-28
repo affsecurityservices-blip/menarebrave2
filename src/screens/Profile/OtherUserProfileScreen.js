@@ -10,6 +10,7 @@ import PostCard from '../../components/post/PostCard';
 import EmptyState from '../../components/common/EmptyState';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MOODS } from '../../utils/constants';
 
 const getBioForUser = (username) => {
   switch (username) {
@@ -42,6 +43,53 @@ export default function OtherUserProfileScreen({ route, navigation }) {
   const [activeTab, setActiveTab] = useState('posts'); // 'posts' or 'about'
   const [isMenuVisible, setIsMenuVisible] = useState(false);
   const [isReportVisible, setIsReportVisible] = useState(false);
+  const [selectedCell, setSelectedCell] = useState(null);
+
+  const getMoodIcon = (moodKey) => {
+    const config = MOODS.find((m) => m.key === moodKey);
+    return config || { icon: 'emoticon-neutral-outline', color: colors.textSecondary };
+  };
+
+  const getMockMoodHistoryForUser = () => {
+    const history = [];
+    const today = new Date();
+    
+    // Deterministic key based on username character codes
+    const charSum = username.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+    
+    for (let i = 27; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(today.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+      
+      const isLogged = (charSum + i * 7) % 10 < 7; // ~70% check-in rate
+      let mood = null;
+      let label = 'No Log';
+      
+      if (isLogged) {
+        const moodIndex = (charSum + i * 3) % MOODS.length;
+        const moodConfig = MOODS[moodIndex];
+        mood = moodConfig.key;
+        label = moodConfig.label;
+      }
+
+      history.push({
+        date: dateStr,
+        dateLabel: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        mood,
+        label,
+      });
+    }
+    return history;
+  };
+
+  const otherUserGridData = React.useMemo(() => getMockMoodHistoryForUser(), [username]);
+
+  const getCellColor = (item) => {
+    if (!item.mood) return colors.border;
+    const config = MOODS.find((m) => m.key === item.mood);
+    return config ? config.color : colors.textSecondary;
+  };
 
   // Hide the default navigator header since we render a custom translucent one
   useLayoutEffect(() => {
@@ -163,6 +211,59 @@ export default function OtherUserProfileScreen({ route, navigation }) {
           <Text style={[styles.aboutText, { color: colors.textPrimary, fontFamily: typography.fontFamily.body, fontSize: 13, lineHeight: 20 }]}>
             "{bio}"
           </Text>
+        </View>
+
+        {/* 28-Day Mood Matrix Card */}
+        <View style={[styles.aboutCard, { backgroundColor: colors.surface, borderColor: colors.border, marginTop: spacing.md }]}>
+          <View style={styles.cardHeader}>
+            <MaterialCommunityIcons name="grid" size={18} color={colors.accent} />
+            <Text style={[styles.aboutTitle, { color: colors.accent, fontFamily: typography.fontFamily.header, fontSize: 13, marginLeft: 8 }]}>
+              {username.toUpperCase()}'S MOOD MATRIX (LAST 28 DAYS)
+            </Text>
+          </View>
+          <Text style={[styles.aboutText, { color: colors.textSecondary, fontFamily: typography.fontFamily.body, fontSize: 11, marginVertical: spacing.xs }]}>
+            Consistency graph showing mood logs. Resilient minds build together.
+          </Text>
+
+          <View style={styles.grid}>
+            {otherUserGridData.map((item, index) => {
+              const isSelected = selectedCell?.date === item.date;
+              return (
+                <TouchableOpacity
+                  key={index}
+                  style={[
+                    styles.gridCell,
+                    {
+                      backgroundColor: getCellColor(item),
+                      borderColor: isSelected ? colors.textPrimary : 'transparent',
+                      borderWidth: isSelected ? 1.5 : 0,
+                    }
+                  ]}
+                  onPress={() => setSelectedCell(item)}
+                  activeOpacity={0.8}
+                />
+              );
+            })}
+          </View>
+
+          <View style={[styles.tooltipContainer, { borderTopColor: colors.border, marginTop: spacing.md, paddingTop: spacing.xs }]}>
+            {selectedCell ? (
+              <View style={styles.tooltipContent}>
+                <MaterialCommunityIcons 
+                  name={selectedCell.mood ? getMoodIcon(selectedCell.mood).icon : 'calendar-blank'} 
+                  size={16} 
+                  color={selectedCell.mood ? getCellColor(selectedCell) : colors.textSecondary} 
+                />
+                <Text style={[styles.tooltipText, { color: colors.textPrimary, fontFamily: typography.fontFamily.header, fontSize: 11, marginLeft: 6 }]}>
+                  {selectedCell.dateLabel}: <Text style={{ color: selectedCell.mood ? getCellColor(selectedCell) : colors.textSecondary }}>{selectedCell.label.toUpperCase()}</Text>
+                </Text>
+              </View>
+            ) : (
+              <Text style={[styles.tooltipPlaceholder, { color: colors.textSecondary, fontFamily: typography.fontFamily.body, fontSize: 11, textAlign: 'center' }]}>
+                Tap any block to view details.
+              </Text>
+            )}
+          </View>
         </View>
 
         {/* Security / Shield details */}
@@ -573,5 +674,38 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '800',
     letterSpacing: 0.5,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginVertical: 12,
+    justifyContent: 'space-between',
+  },
+  gridCell: {
+    width: '11%',
+    aspectRatio: 1,
+    borderRadius: 4,
+  },
+  tooltipContainer: {
+    borderTopWidth: 1,
+    height: 32,
+    justifyContent: 'center',
+  },
+  tooltipContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tooltipText: {
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  tooltipPlaceholder: {
+    fontStyle: 'italic',
   },
 });

@@ -6,6 +6,7 @@ import HomeFeedScreen from '../screens/Feed/HomeFeedScreen';
 import PostDetailScreen from '../screens/Feed/PostDetailScreen';
 import SearchScreen from '../screens/Feed/SearchScreen';
 import OtherUserProfileScreen from '../screens/Profile/OtherUserProfileScreen';
+import NotificationsScreen from '../screens/Notifications/NotificationsScreen';
 import { useTheme } from '../context/ThemeContext';
 
 const Stack = createNativeStackNavigator();
@@ -64,6 +65,11 @@ export default function FeedStackNavigator() {
         name="OtherUserProfile"
         component={OtherUserProfileScreen}
         options={{ title: 'CONTRIBUTOR' }}
+      />
+      <Stack.Screen
+        name="Notifications"
+        component={NotificationsScreen}
+        options={{ title: 'NOTIFICATIONS' }}
       />
     </Stack.Navigator>
   );

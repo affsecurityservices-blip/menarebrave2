@@ -37,7 +37,18 @@ export default function HomeFeedScreen({ navigation }) {
       <View style={[styles.header, { borderBottomColor: colors.border, paddingHorizontal: spacing.md, paddingVertical: spacing.sm }]}>
         <StreakBadge count={streakCount} />
         <View style={styles.headerActions}>
-          <TouchableOpacity onPress={() => navigation.navigate('ProfileTab', { screen: 'DailyCheckIn' })} style={styles.actionBtn}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Notifications')}
+            style={styles.actionBtn}
+            activeOpacity={0.7}
+          >
+            <MaterialCommunityIcons name="bell-outline" size={24} color={colors.accent} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('ProfileTab', { screen: 'DailyCheckIn' })}
+            style={styles.actionBtn}
+            activeOpacity={0.7}
+          >
             <MaterialCommunityIcons name="emoticon-outline" size={24} color={colors.accent} />
           </TouchableOpacity>
         </View>
