@@ -179,11 +179,6 @@ const styles = StyleSheet.create({
     left: 16,
     right: 16,
     zIndex: 9999,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 8,
-    elevation: 8,
     ...Platform.select({
       web: {
         maxWidth: 568,
@@ -191,8 +186,15 @@ const styles = StyleSheet.create({
         left: 'auto',
         right: 'auto',
         width: '100%',
+        boxShadow: '0px 6px 8px rgba(0, 0, 0, 0.35)',
       },
-      default: {},
+      default: {
+        shadowColor: '#000000',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.35,
+        shadowRadius: 8,
+        elevation: 8,
+      },
     }),
   },
   container: {
