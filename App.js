@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Platform } from 'react-native';
+import { StyleSheet, View, Platform, LogBox } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -14,8 +14,28 @@ import AuthNavigator from './src/navigation/AuthNavigator';
 import MainTabNavigator from './src/navigation/MainTabNavigator';
 import LoadingSpinner from './src/components/common/LoadingSpinner';
 
+// Suppress deprecated pointerEvents prop warnings from React Navigation elements in Dev environment
+LogBox.ignoreLogs([
+  'pointerEvents is deprecated',
+  'style.pointerEvents',
+  'props.pointerEvents is deprecated'
+]);
+
 // Inject global style & Google Fonts to hide scrollbars and load premium typography on Web/Desktop
 if (Platform.OS === 'web') {
+  // Suppress warning logs on web console
+  const originalWarn = console.warn;
+  console.warn = (...args) => {
+    if (
+      args[0] &&
+      typeof args[0] === 'string' &&
+      (args[0].includes('pointerEvents is deprecated') || args[0].includes('style.pointerEvents'))
+    ) {
+      return;
+    }
+    originalWarn(...args);
+  };
+
   // Create link tag for Google Fonts
   const fontLink = document.createElement('link');
   fontLink.rel = 'stylesheet';
@@ -51,7 +71,21 @@ function AppContent() {
     <View style={[styles.outerContainer, { backgroundColor: colors.background }]}>
       <View style={[styles.container, { backgroundColor: colors.background, borderColor: colors.border }]}>
         <StatusBar style={themeMode === 'batman' ? 'light' : 'auto'} />
-        <NavigationContainer>
+        <NavigationContainer
+          onStateChange={() => {
+            if (Platform.OS === 'web' && typeof document !== 'undefined') {
+              // Blur active element to prevent the browser warning
+              // "Blocked aria-hidden on an element because its descendant retained focus"
+              if (
+                document.activeElement &&
+                document.activeElement !== document.body &&
+                typeof document.activeElement.blur === 'function'
+              ) {
+                document.activeElement.blur();
+              }
+            }
+          }}
+        >
           {user ? <MainTabNavigator /> : <AuthNavigator />}
         </NavigationContainer>
       </View>
