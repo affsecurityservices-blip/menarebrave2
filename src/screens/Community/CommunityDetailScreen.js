@@ -182,7 +182,7 @@ export default function CommunityDetailScreen({ route, navigation }) {
           style={[styles.writePostBanner, { backgroundColor: colors.surface, borderColor: colors.border }]}
           onPress={() => {
             const initialCategory = community.name.split(' ')[0];
-            navigation.navigate('CreatePostTab', { initialCategory });
+            navigation.navigate('CreatePost', { initialCategory });
           }}
           activeOpacity={0.9}
         >

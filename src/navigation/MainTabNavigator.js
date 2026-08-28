@@ -120,6 +120,15 @@ export default function MainTabNavigator() {
             </View>
           ),
         }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            e.preventDefault();
+            navigation.navigate('CommunitiesTab', {
+              screen: 'CreatePost',
+              params: { initialCategory: undefined }
+            });
+          },
+        })}
       />
       <Tab.Screen
         name="ChatTab"

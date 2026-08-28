@@ -6,6 +6,7 @@ import ThreadDetailScreen from '../screens/Community/ThreadDetailScreen';
 import CreateCommunityScreen from '../screens/Community/CreateCommunityScreen';
 import OtherUserProfileScreen from '../screens/Profile/OtherUserProfileScreen';
 import PostDetailScreen from '../screens/Feed/PostDetailScreen';
+import CreatePostScreen from '../screens/Feed/CreatePostScreen';
 import { useTheme } from '../context/ThemeContext';
 
 const Stack = createNativeStackNavigator();
@@ -63,6 +64,14 @@ export default function CommunityStackNavigator() {
         name="PostDetail"
         component={PostDetailScreen}
         options={{ title: 'CONVERSATION' }}
+      />
+      <Stack.Screen
+        name="CreatePost"
+        component={CreatePostScreen}
+        options={{ 
+          title: 'NEW POST',
+          animation: 'slide_from_bottom'
+        }}
       />
     </Stack.Navigator>
   );
