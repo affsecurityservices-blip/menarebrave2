@@ -1,28 +1,78 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { useUser } from '../../context/UserContext';
+import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import PostCard from '../../components/post/PostCard';
 import CommentItem from '../../components/post/CommentItem';
 import InputField from '../../components/common/InputField';
 import Button from '../../components/common/Button';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { supabase } from '../../services/supabaseClient';
 
 export default function PostDetailScreen({ route, navigation }) {
   const { postId } = route.params || {};
   const { colors, typography, spacing } = useTheme();
-  const { posts, toggleLikePost, toggleSavePost } = useUser();
+  const { posts, toggleLikePost, toggleSavePost, fetchPosts } = useUser();
+  const { user } = useAuth();
   const toast = useToast();
 
   const post = posts.find((p) => p.id === postId);
 
   const [commentText, setCommentText] = useState('');
-  const [comments, setComments] = useState([
-    { id: 'c1', author: 'SolidGrit_45', timestamp: '1h ago', content: 'Hold your head up high. This phase will pass.', replies: [] },
-    { id: 'c2', author: 'SolidBrother', timestamp: '30m ago', content: 'DM is open if you need an ear, brother.', replies: [] },
-  ]);
+  const [comments, setComments] = useState([]);
   const [replyToComment, setReplyToComment] = useState(null);
+
+  const fetchComments = async () => {
+    try {
+      const { data: dbComments } = await supabase
+        .from('comments')
+        .select('*')
+        .eq('post_id', postId)
+        .order('created_at', { ascending: true });
+        
+      if (dbComments) {
+        const commentIds = dbComments.map(c => c.id);
+        let allReplies = [];
+        if (commentIds.length > 0) {
+          const { data: dbReplies } = await supabase
+            .from('replies')
+            .select('*')
+            .in('comment_id', commentIds)
+            .order('created_at', { ascending: true });
+          if (dbReplies) allReplies = dbReplies;
+        }
+
+        const formattedComments = dbComments.map(c => {
+          const commentReplies = allReplies
+            .filter(r => r.comment_id === c.id)
+            .map(r => ({
+              id: r.id,
+              author: r.author_name,
+              timestamp: 'Just now',
+              content: r.content,
+            }));
+
+          return {
+            id: c.id,
+            author: c.is_anonymous ? 'Anonymous Member' : c.author_name,
+            timestamp: 'Just now',
+            content: c.content,
+            replies: commentReplies,
+          };
+        });
+
+        setComments(formattedComments);
+      }
+    } catch (e) {
+      console.log('Error fetching comments:', e);
+    }
+  };
+
+  useEffect(() => {
+    fetchComments();
+  }, [postId]);
 
   if (!post) {
     return (
@@ -34,37 +84,42 @@ export default function PostDetailScreen({ route, navigation }) {
     );
   }
 
-  const handleAddComment = () => {
-    if (!commentText.trim()) return;
+  const handleAddComment = async () => {
+    if (!commentText.trim() || !user) return;
 
-    if (replyToComment) {
-      // Add nested reply to selected comment
-      const newReply = {
-        id: `r_${Date.now()}`,
-        author: 'Anonymous Member',
-        timestamp: 'Just now',
-        content: commentText,
-      };
-      setComments((prev) =>
-        prev.map((c) =>
-          c.id === replyToComment.id
-            ? { ...c, replies: [...(c.replies || []), newReply] }
-            : c
-        )
-      );
-      setReplyToComment(null);
-    } else {
-      // Add root level comment
-      const newComment = {
-        id: `c_${Date.now()}`,
-        author: 'Anonymous Member',
-        timestamp: 'Just now',
-        content: commentText,
-        replies: [],
-      };
-      setComments((prev) => [...prev, newComment]);
+    try {
+      if (replyToComment) {
+        const newReply = {
+          comment_id: replyToComment.id,
+          author_id: user.id,
+          author_name: user.isAnonymous ? 'Anonymous Member' : user.username,
+          content: commentText,
+        };
+        const { error } = await supabase.from('replies').insert([newReply]);
+        if (error) throw error;
+        setReplyToComment(null);
+      } else {
+        const newComment = {
+          post_id: postId,
+          author_id: user.id,
+          author_name: user.isAnonymous ? 'Anonymous Member' : user.username,
+          content: commentText,
+          is_anonymous: user.isAnonymous,
+        };
+        const { error } = await supabase.from('comments').insert([newComment]);
+        if (error) throw error;
+        
+        await supabase
+          .from('posts')
+          .update({ comments_count: (post.commentsCount || 0) + 1 })
+          .eq('id', postId);
+      }
+      setCommentText('');
+      await fetchComments();
+      await fetchPosts();
+    } catch (e) {
+      console.log('Error adding comment:', e);
     }
-    setCommentText('');
   };
 
   return (

@@ -6,6 +6,8 @@ import { useToast } from '../../context/ToastContext';
 import Avatar from '../common/Avatar';
 import ReplyItem from './ReplyItem';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { getBadgeAndTitle } from '../../utils/constants';
 
 export default function CommentItem({ comment, onReply }) {
   const { colors, typography, spacing } = useTheme();
@@ -39,13 +41,21 @@ export default function CommentItem({ comment, onReply }) {
         {/* Right Column: Comment Info, Content & Replies */}
         <View style={{ flex: 1, marginLeft: 12 }}>
           {/* Header Info */}
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <TouchableOpacity onPress={handleProfilePress} activeOpacity={0.7}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+            <TouchableOpacity onPress={handleProfilePress} activeOpacity={0.7} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
               <Text style={[styles.author, { color: colors.textPrimary, fontFamily: typography.fontFamily.body, fontSize: typography.sizes.sm }]}>
                 {comment.author}
               </Text>
+              {getBadgeAndTitle(comment.author) && (
+                <View style={[styles.badgeContainer, { backgroundColor: colors.yellowMuted, borderColor: getBadgeAndTitle(comment.author).color }]}>
+                  <MaterialCommunityIcons name={getBadgeAndTitle(comment.author).icon} size={9} color={getBadgeAndTitle(comment.author).color} style={{ marginRight: 2 }} />
+                  <Text style={[styles.badgeTextLabel, { color: getBadgeAndTitle(comment.author).color, fontFamily: typography.fontFamily.header, fontSize: 7 }]}>
+                    {getBadgeAndTitle(comment.author).title}
+                  </Text>
+                </View>
+              )}
             </TouchableOpacity>
-            <Text style={[styles.time, { color: colors.textSecondary, fontFamily: typography.fontFamily.body, fontSize: typography.sizes.xs, marginLeft: 8 }]}>
+            <Text style={[styles.time, { color: colors.textSecondary, fontFamily: typography.fontFamily.body, fontSize: typography.sizes.xs }]}>
               {comment.timestamp}
             </Text>
           </View>
@@ -96,5 +106,17 @@ const styles = StyleSheet.create({
   },
   content: {
     fontWeight: '400',
+  },
+  badgeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 4,
+    paddingHorizontal: 4,
+    paddingVertical: 0.5,
+  },
+  badgeTextLabel: {
+    fontWeight: '800',
+    letterSpacing: 0.5,
   },
 });

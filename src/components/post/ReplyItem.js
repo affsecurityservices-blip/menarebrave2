@@ -5,6 +5,8 @@ import { useNavigation } from '@react-navigation/native';
 import { useToast } from '../../context/ToastContext';
 import Avatar from '../common/Avatar';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { getBadgeAndTitle } from '../../utils/constants';
 
 export default function ReplyItem({ reply }) {
   const { colors, typography, spacing } = useTheme();
@@ -31,9 +33,19 @@ export default function ReplyItem({ reply }) {
       >
         <Avatar type="anonymous" size={24} />
         <View style={styles.headerInfo}>
-          <Text style={[styles.author, { color: colors.textPrimary, fontFamily: typography.fontFamily.body, fontSize: typography.sizes.sm }]}>
-            {reply.author}
-          </Text>
+          <View style={styles.authorContainer}>
+            <Text style={[styles.author, { color: colors.textPrimary, fontFamily: typography.fontFamily.body, fontSize: typography.sizes.sm }]}>
+              {reply.author}
+            </Text>
+            {getBadgeAndTitle(reply.author) && (
+              <View style={[styles.badgeContainer, { backgroundColor: colors.yellowMuted, borderColor: getBadgeAndTitle(reply.author).color }]}>
+                <MaterialCommunityIcons name={getBadgeAndTitle(reply.author).icon} size={8} color={getBadgeAndTitle(reply.author).color} style={{ marginRight: 2 }} />
+                <Text style={[styles.badgeTextLabel, { color: getBadgeAndTitle(reply.author).color, fontFamily: typography.fontFamily.header, fontSize: 6 }]}>
+                  {getBadgeAndTitle(reply.author).title}
+                </Text>
+              </View>
+            )}
+          </View>
           <Text style={[styles.time, { color: colors.textSecondary, fontFamily: typography.fontFamily.body, fontSize: typography.sizes.xs }]}>
             {reply.timestamp}
           </Text>
@@ -67,6 +79,24 @@ const styles = StyleSheet.create({
   },
   author: {
     fontWeight: '600',
+  },
+  authorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    flexWrap: 'wrap',
+  },
+  badgeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 4,
+    paddingHorizontal: 3,
+    paddingVertical: 0.5,
+  },
+  badgeTextLabel: {
+    fontWeight: '800',
+    letterSpacing: 0.5,
   },
   time: {
     marginTop: 1,

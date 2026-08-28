@@ -8,6 +8,8 @@ import PostActions from './PostActions';
 import ReportModal from '../common/ReportModal';
 import { moderationService } from '../../services/moderationService';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { getBadgeAndTitle } from '../../utils/constants';
 
 export default function PostCard({ post, onLike, onSave, onCommentPress, onReportPress, onCardPress }) {
   const { colors, typography, spacing } = useTheme();
@@ -65,9 +67,19 @@ export default function PostCard({ post, onLike, onSave, onCommentPress, onRepor
         >
           <Avatar type={post.avatar} size={40} />
           <View style={styles.headerInfo}>
-            <Text style={[styles.author, { color: colors.textPrimary, fontFamily: typography.fontFamily.body, fontSize: typography.sizes.md }]}>
-              {post.author}
-            </Text>
+            <View style={styles.authorContainer}>
+              <Text style={[styles.author, { color: colors.textPrimary, fontFamily: typography.fontFamily.body, fontSize: typography.sizes.md }]}>
+                {post.author}
+              </Text>
+              {getBadgeAndTitle(post.author) && (
+                <View style={[styles.badgeContainer, { backgroundColor: colors.yellowMuted, borderColor: getBadgeAndTitle(post.author).color }]}>
+                  <MaterialCommunityIcons name={getBadgeAndTitle(post.author).icon} size={10} color={getBadgeAndTitle(post.author).color} style={{ marginRight: 3 }} />
+                  <Text style={[styles.badgeTextLabel, { color: getBadgeAndTitle(post.author).color, fontFamily: typography.fontFamily.header, fontSize: 8 }]}>
+                    {getBadgeAndTitle(post.author).title}
+                  </Text>
+                </View>
+              )}
+            </View>
             <Text style={[styles.time, { color: colors.textSecondary, fontFamily: typography.fontFamily.body, fontSize: typography.sizes.xs }]}>
               {post.timestamp}
             </Text>
@@ -179,5 +191,23 @@ const styles = StyleSheet.create({
   },
   categoryText: {
     fontWeight: '600',
+  },
+  authorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flexWrap: 'wrap',
+  },
+  badgeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 4,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+  },
+  badgeTextLabel: {
+    fontWeight: '800',
+    letterSpacing: 0.5,
   },
 });

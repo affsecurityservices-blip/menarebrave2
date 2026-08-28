@@ -39,3 +39,19 @@ export const MOODS = [
   { key: 'neutral', label: 'Neutral', icon: 'emoticon-neutral', color: '#8A8A9E' },
   { key: 'angry', label: 'Angry', icon: 'emoticon-angry', color: '#D62828' },
 ];
+
+export const getBadgeAndTitle = (username) => {
+  if (!username || username === 'Anonymous Member' || username === 'Anonymous') {
+    return null;
+  }
+  const badges = {
+    'Bruce_93': { title: 'STOIC WARRIOR', icon: 'shield-crown', color: '#FFD100' },
+    'SilentGideon': { title: 'FAMILY SHIELD', icon: 'crown', color: '#FFD100' },
+    'Anonymous Bat': { title: 'SENTINEL', icon: 'shield-check', color: '#8A8A9E' },
+    'SolidGrit_45': { title: 'CONSISTENCY APEX', icon: 'fire', color: '#FFD100' },
+    'SolidBrother': { title: 'RECOVERY LEADER', icon: 'account-supervisor', color: '#FFD100' },
+    'IronGrip_92': { title: 'IRON MIND', icon: 'dumbbell', color: '#FFD100' },
+    'MentorAurelius': { title: 'PHILOSOPHER', icon: 'brain', color: '#FFD100' },
+  };
+  return badges[username] || { title: 'ELITE BROTHER', icon: 'crown', color: '#FFD100' };
+};
