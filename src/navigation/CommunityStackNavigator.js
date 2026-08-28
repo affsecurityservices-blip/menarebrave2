@@ -69,7 +69,7 @@ export default function CommunityStackNavigator() {
         name="CreatePost"
         component={CreatePostScreen}
         options={{ 
-          title: 'NEW POST',
+          headerShown: false,
           animation: 'slide_from_bottom'
         }}
       />

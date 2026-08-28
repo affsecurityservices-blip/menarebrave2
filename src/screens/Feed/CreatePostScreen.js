@@ -10,9 +10,11 @@ import PostAdviceToggle from '../../components/post/PostAdviceToggle';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { COMMUNITIES } from '../../utils/constants';
 import Animated, { SlideInDown } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function CreatePostScreen({ navigation, route }) {
   const { colors, typography, spacing } = useTheme();
+  const insets = useSafeAreaInsets();
   const { addPost } = useUser();
   const { user } = useAuth();
   const toast = useToast();
@@ -52,18 +54,22 @@ export default function CreatePostScreen({ navigation, route }) {
 
   return (
     <Animated.View entering={SlideInDown.duration(400)} style={{ flex: 1, backgroundColor: colors.background }}>
-      <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background, padding: spacing.md }]}>
-        {!route.params?.initialCategory && (
-          <Text style={[styles.title, {
-            color: colors.textPrimary,
-            fontFamily: typography.fontFamily.header,
-            fontSize: typography.sizes.xl,
-            marginBottom: spacing.md,
-            textTransform: 'uppercase',
-          }]}>
-            NEW POST
-          </Text>
+      {/* Sticky Custom Header */}
+      <View style={[styles.customHeader, { borderBottomColor: colors.border, paddingTop: Math.max(insets.top, 16) }]}>
+        {navigation.canGoBack() ? (
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton} activeOpacity={0.7}>
+            <MaterialCommunityIcons name="close" size={24} color={colors.textPrimary} />
+          </TouchableOpacity>
+        ) : (
+          <View style={{ width: 24 }} />
         )}
+        <Text style={[styles.headerTitle, { color: colors.textPrimary, fontFamily: typography.fontFamily.header }]}>
+          NEW POST
+        </Text>
+        <View style={{ width: 24 }} />
+      </View>
+
+      <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background, padding: spacing.md }]}>
 
         {/* Post / Advice Selector */}
         <View style={{ marginBottom: spacing.md }}>
@@ -193,5 +199,22 @@ const styles = StyleSheet.create({
   },
   anonText: {
     fontWeight: '600',
+  },
+  customHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  backButton: {
+    padding: 4,
+  },
+  headerTitle: {
+    fontSize: 14,
+    fontWeight: '900',
+    letterSpacing: 1,
+    textAlign: 'center',
   },
 });
