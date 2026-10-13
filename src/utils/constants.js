@@ -1,5 +1,5 @@
-export const SUPABASE_URL = ''; // Add your Supabase URL here
-export const SUPABASE_ANON_KEY = ''; // Add your Supabase Anon Key here
+export const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://sjayvueparmwaokxorbd.supabase.co';
+export const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_V8oYJ2iXSfmO0bEWWbL01A_3DfOcM29';
 
 export const COMMUNITIES = [
   {

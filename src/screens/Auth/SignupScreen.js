@@ -1,27 +1,40 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import Button from '../../components/common/Button';
 import InputField from '../../components/common/InputField';
-import { validateEmail, validatePassword } from '../../utils/validators';
+import { validatePhone } from '../../utils/validators';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+
+const SECURITY_QUESTIONS = [
+  'What is your secret brotherhood code phrase?',
+  'What city were you born in?',
+  'What was your childhood nickname?',
+  'What was your first pet or mentor name?',
+  'What was the model of your first vehicle?',
+];
 
 export default function SignupScreen({ navigation }) {
   const { colors, typography, spacing } = useTheme();
-  const { signup, isLoading } = useAuth();
+  const { signupWithPhone, isLoading } = useAuth();
   const toast = useToast();
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [phone, setPhone] = useState('');
+  const [selectedQuestion, setSelectedQuestion] = useState(SECURITY_QUESTIONS[0]);
+  const [isQuestionDropdownOpen, setIsQuestionDropdownOpen] = useState(false);
+  const [securityAnswer, setSecurityAnswer] = useState('');
   const [errors, setErrors] = useState({});
+
+  // Generated PIN Modal State
+  const [generatedPin, setGeneratedPin] = useState(null);
+  const [showPinModal, setShowPinModal] = useState(false);
 
   const handleSignup = async () => {
     const newErrors = {};
-    if (!validateEmail(email)) newErrors.email = 'Invalid email address';
-    if (!validatePassword(password)) newErrors.password = 'Password must be at least 6 characters';
-    if (password !== confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
+    if (!validatePhone(phone)) newErrors.phone = 'Enter a valid 10-digit mobile number';
+    if (!securityAnswer.trim()) newErrors.securityAnswer = 'Answer is required for recovery';
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -30,73 +43,168 @@ export default function SignupScreen({ navigation }) {
 
     try {
       setErrors({});
-      await signup(email, password);
-      navigation.navigate('GenderOath'); // Redirect to onboarding oath flow
+      // Generate a random 5-digit PIN
+      const randomPin = Math.floor(10000 + Math.random() * 90000).toString();
+      
+      const result = await signupWithPhone(phone, randomPin, selectedQuestion, securityAnswer);
+      setGeneratedPin(result.pin);
+      setShowPinModal(true);
     } catch (err) {
       toast.error(err.message || 'Signup failed. Please try again.');
     }
   };
 
+  const handleContinueAfterPin = () => {
+    setShowPinModal(false);
+    toast.success('Account created and logged in!');
+    navigation.navigate('GenderOath');
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background, padding: spacing.lg }]}>
-      <View style={styles.form}>
-        <Text style={[styles.title, {
-          color: colors.textPrimary,
-          fontFamily: typography.fontFamily.header,
-          fontSize: typography.sizes.xxl,
-          marginBottom: spacing.lg,
-          textAlign: 'center',
-        }]}>
-          CREATE SHELTER KEYS
-        </Text>
+      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+        <View style={styles.form}>
+          <Text style={[styles.title, {
+            color: colors.textPrimary,
+            fontFamily: typography.fontFamily.header,
+            fontSize: typography.sizes.xxl,
+            marginBottom: spacing.xs,
+            textAlign: 'center',
+          }]}>
+            CREATE SHELTER KEYS
+          </Text>
+          <Text style={{
+            color: colors.textSecondary,
+            fontFamily: typography.fontFamily.body,
+            fontSize: typography.sizes.sm,
+            marginBottom: spacing.lg,
+            textAlign: 'center',
+          }}>
+            Enter your mobile number. A private 5-digit key will be generated for you.
+          </Text>
 
-        <InputField
-          label="EMAIL"
-          placeholder="your.email@example.com"
-          value={email}
-          onChangeText={setEmail}
-          error={errors.email}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
+          <InputField
+            label="MOBILE NUMBER"
+            placeholder="10-digit phone number"
+            value={phone}
+            onChangeText={(val) => setPhone(val.replace(/[^0-9]/g, ''))}
+            error={errors.phone}
+            keyboardType="phone-pad"
+            maxLength={10}
+          />
 
-        <InputField
-          label="PASSWORD"
-          placeholder="••••••••"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          error={errors.password}
-          autoCapitalize="none"
-        />
+          {/* Security Question Selector */}
+          <Text style={[styles.inputLabel, { color: colors.textSecondary, fontFamily: typography.fontFamily.body, fontSize: typography.sizes.xs }]}>
+            SECURITY RECOVERY QUESTION
+          </Text>
+          <TouchableOpacity
+            style={[styles.dropdownButton, {
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
+              padding: spacing.md,
+              borderRadius: spacing.borderRadius.xs,
+              marginBottom: isQuestionDropdownOpen ? spacing.xs : spacing.md,
+            }]}
+            onPress={() => setIsQuestionDropdownOpen(!isQuestionDropdownOpen)}
+            activeOpacity={0.8}
+          >
+            <Text style={{ color: colors.textPrimary, fontFamily: typography.fontFamily.body, fontSize: 13, flex: 1 }}>
+              {selectedQuestion}
+            </Text>
+            <MaterialCommunityIcons
+              name={isQuestionDropdownOpen ? 'chevron-up' : 'chevron-down'}
+              size={20}
+              color={colors.accent}
+            />
+          </TouchableOpacity>
 
-        <InputField
-          label="CONFIRM PASSWORD"
-          placeholder="••••••••"
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          secureTextEntry
-          error={errors.confirmPassword}
-          autoCapitalize="none"
-        />
+          {isQuestionDropdownOpen && (
+            <View style={[styles.dropdownList, { backgroundColor: colors.surface, borderColor: colors.border, marginBottom: spacing.md }]}>
+              {SECURITY_QUESTIONS.map((q, idx) => (
+                <TouchableOpacity
+                  key={idx}
+                  style={[styles.dropdownItem, {
+                    backgroundColor: selectedQuestion === q ? colors.yellowMuted : 'transparent',
+                    borderBottomColor: colors.border,
+                    borderBottomWidth: idx < SECURITY_QUESTIONS.length - 1 ? 1 : 0,
+                    padding: spacing.sm,
+                  }]}
+                  onPress={() => {
+                    setSelectedQuestion(q);
+                    setIsQuestionDropdownOpen(false);
+                  }}
+                >
+                  <Text style={{ color: selectedQuestion === q ? colors.accent : colors.textPrimary, fontSize: 12 }}>
+                    {q}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
 
-        <Button
-          title="CREATE ACCOUNT"
-          variant="primary"
-          onPress={handleSignup}
-          loading={isLoading}
-          style={{ marginTop: spacing.md }}
-        />
-      </View>
+          <InputField
+            label="SECURITY ANSWER (FOR FORGOT PASSWORD)"
+            placeholder="Your secret answer..."
+            value={securityAnswer}
+            onChangeText={setSecurityAnswer}
+            error={errors.securityAnswer}
+            autoCapitalize="none"
+          />
 
-      <TouchableOpacity
-        onPress={() => navigation.navigate('Login')}
-        style={styles.loginLink}
+          <Button
+            title="GENERATE 5-DIGIT KEY & SIGN UP"
+            variant="primary"
+            onPress={handleSignup}
+            loading={isLoading}
+            style={{ marginTop: spacing.md }}
+          />
+        </View>
+
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Login')}
+          style={styles.loginLink}
+        >
+          <Text style={[styles.loginText, { color: colors.textSecondary, fontFamily: typography.fontFamily.body, fontSize: typography.sizes.sm }]}>
+            Already running? <Text style={{ color: colors.accent, fontWeight: '700' }}>SIGN IN</Text>
+          </Text>
+        </TouchableOpacity>
+      </ScrollView>
+
+      {/* Generated 5-digit PIN Reveal Modal */}
+      <Modal
+        visible={showPinModal}
+        transparent
+        animationType="fade"
       >
-        <Text style={[styles.loginText, { color: colors.textSecondary, fontFamily: typography.fontFamily.body, fontSize: typography.sizes.sm }]}>
-          Already running? <Text style={{ color: colors.accent, fontWeight: '700' }}>SIGN IN</Text>
-        </Text>
-      </TouchableOpacity>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalCard, { backgroundColor: colors.surface, borderColor: colors.accent }]}>
+            <MaterialCommunityIcons name="shield-key" size={48} color={colors.accent} style={{ alignSelf: 'center', marginBottom: 12 }} />
+            <Text style={[styles.modalTitle, { color: colors.textPrimary, fontFamily: typography.fontFamily.header }]}>
+              YOUR 5-DIGIT SHELTER KEY
+            </Text>
+            <Text style={[styles.modalSubtitle, { color: colors.textSecondary, fontFamily: typography.fontFamily.body }]}>
+              Save this PIN! You will need your Phone Number and this PIN to sign in again.
+            </Text>
+
+            <View style={[styles.pinDisplayBox, { backgroundColor: colors.yellowMuted, borderColor: colors.accent }]}>
+              <Text style={[styles.pinDisplayText, { color: colors.accent, fontFamily: typography.fontFamily.header }]}>
+                {generatedPin}
+              </Text>
+            </View>
+
+            <Text style={[styles.pinWarning, { color: colors.textSecondary, fontFamily: typography.fontFamily.body }]}>
+              Tip: If you forget this key, you can reset it anytime using your security question.
+            </Text>
+
+            <Button
+              title="I HAVE SAVED MY KEY • ENTER"
+              variant="primary"
+              onPress={handleContinueAfterPin}
+              style={{ marginTop: 16 }}
+            />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -104,6 +212,9 @@ export default function SignupScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: 'space-between',
   },
   form: {
@@ -114,11 +225,75 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: 1.5,
   },
+  inputLabel: {
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    marginBottom: 6,
+  },
+  dropdownButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+  },
+  dropdownList: {
+    borderWidth: 1,
+    borderRadius: 6,
+    overflow: 'hidden',
+  },
+  dropdownItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+  },
   loginLink: {
     alignSelf: 'center',
     paddingVertical: 12,
   },
   loginText: {
     fontWeight: '500',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 380,
+    borderRadius: 16,
+    borderWidth: 2,
+    padding: 24,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '900',
+    textAlign: 'center',
+    letterSpacing: 1,
+  },
+  modalSubtitle: {
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 6,
+    lineHeight: 18,
+  },
+  pinDisplayBox: {
+    borderWidth: 2,
+    borderRadius: 8,
+    paddingVertical: 16,
+    marginVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pinDisplayText: {
+    fontSize: 36,
+    fontWeight: '900',
+    letterSpacing: 8,
+  },
+  pinWarning: {
+    fontSize: 11,
+    textAlign: 'center',
+    lineHeight: 16,
   },
 });

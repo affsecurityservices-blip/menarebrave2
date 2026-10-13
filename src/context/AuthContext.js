@@ -28,6 +28,8 @@ export const AuthProvider = ({ children }) => {
         setUser({
           id: authUser.id,
           email: authUser.email,
+          phone: data.phone,
+          securityQuestion: data.security_question,
           username: data.username,
           avatar: data.avatar,
           streakCount: data.streak_count,
@@ -40,6 +42,7 @@ export const AuthProvider = ({ children }) => {
         setUser({
           id: authUser.id,
           email: authUser.email,
+          phone: authUser.email?.split('@')[0],
           username: authUser.user_metadata?.username || authUser.email.split('@')[0],
           avatar: authUser.user_metadata?.avatar || 'batman',
           streakCount: 3,
@@ -82,6 +85,14 @@ export const AuthProvider = ({ children }) => {
     });
     setIsLoading(false);
     if (error) throw error;
+    return data;
+  };
+
+  const loginWithPhone = async (phone, pin) => {
+    const cleanPhone = phone.replace(/[^0-9]/g, '');
+    const email = `${cleanPhone}@mab.app`;
+    const internalPassword = `${pin}_mab`;
+    return await login(email, internalPassword);
   };
 
   const signup = async (email, password) => {
@@ -98,6 +109,75 @@ export const AuthProvider = ({ children }) => {
     });
     setIsLoading(false);
     if (error) throw error;
+    return data;
+  };
+
+  const signupWithPhone = async (phone, pin, securityQuestion, securityAnswer) => {
+    setIsLoading(true);
+    try {
+      const cleanPhone = phone.replace(/[^0-9]/g, '');
+      const finalPin = pin || Math.floor(10000 + Math.random() * 90000).toString();
+      const email = `${cleanPhone}@mab.app`;
+      const internalPassword = `${finalPin}_mab`;
+
+      // 1. Create auth user in Supabase
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password: internalPassword,
+        options: {
+          data: {
+            username: onboardingState.username || cleanPhone,
+            avatar: onboardingState.avatar || 'batman',
+          }
+        }
+      });
+      if (signUpError) throw signUpError;
+      if (!signUpData?.user) throw new Error('Failed to create account.');
+
+      // 2. Call server-side complete_phone_signup RPC
+      const { data: rpcData, error: rpcError } = await supabase.rpc('complete_phone_signup', {
+        p_user_id: signUpData.user.id,
+        p_phone: cleanPhone,
+        p_password: finalPin,
+        p_security_question: securityQuestion,
+        p_security_answer: securityAnswer,
+        p_age_range: onboardingState.ageRange || null,
+        p_interests: onboardingState.interests || null,
+      });
+      if (rpcError) throw rpcError;
+
+      // 3. Immediately sign in to establish active session
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password: internalPassword,
+      });
+      if (signInError) throw signInError;
+
+      setIsLoading(false);
+      return { pin: finalPin, user: signInData.user };
+    } catch (err) {
+      setIsLoading(false);
+      throw err;
+    }
+  };
+
+  const fetchSecurityQuestion = async (phone) => {
+    const cleanPhone = phone.replace(/[^0-9]/g, '');
+    const { data, error } = await supabase.rpc('get_phone_security_question', {
+      p_phone: cleanPhone,
+    });
+    if (error) throw error;
+    return data;
+  };
+
+  const resetPasswordWithAnswer = async (phone, answer) => {
+    const cleanPhone = phone.replace(/[^0-9]/g, '');
+    const { data, error } = await supabase.rpc('reset_phone_password', {
+      p_phone: cleanPhone,
+      p_answer: answer,
+    });
+    if (error) throw error;
+    return data;
   };
 
   const logout = async () => {
@@ -137,7 +217,11 @@ export const AuthProvider = ({ children }) => {
         onboardingCompleted,
         onboardingState,
         login,
+        loginWithPhone,
         signup,
+        signupWithPhone,
+        fetchSecurityQuestion,
+        resetPasswordWithAnswer,
         logout,
         updateOnboarding,
         completeOnboarding,

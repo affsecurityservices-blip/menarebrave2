@@ -5,21 +5,21 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import Button from '../../components/common/Button';
 import InputField from '../../components/common/InputField';
-import { validateEmail, validatePassword } from '../../utils/validators';
+import { validatePhone, validatePin } from '../../utils/validators';
 
 export default function LoginScreen({ navigation }) {
   const { colors, typography, spacing } = useTheme();
-  const { login, isLoading } = useAuth();
+  const { loginWithPhone, isLoading } = useAuth();
   const toast = useToast();
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState('');
+  const [pin, setPin] = useState('');
   const [errors, setErrors] = useState({});
 
   const handleLogin = async () => {
     const newErrors = {};
-    if (!validateEmail(email)) newErrors.email = 'Invalid email address';
-    if (!validatePassword(password)) newErrors.password = 'Password must be at least 6 characters';
+    if (!validatePhone(phone)) newErrors.phone = 'Enter a valid 10-digit mobile number';
+    if (!validatePin(pin)) newErrors.pin = 'Enter your 5-digit shelter PIN';
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -28,9 +28,10 @@ export default function LoginScreen({ navigation }) {
 
     try {
       setErrors({});
-      await login(email, password);
+      await loginWithPhone(phone, pin);
+      toast.success('Shield verified. Welcome back.');
     } catch (err) {
-      toast.error(err.message || 'Login failed. Please check credentials.');
+      toast.error(err.message || 'Login failed. Please check phone number and 5-digit PIN.');
     }
   };
 
@@ -41,30 +42,40 @@ export default function LoginScreen({ navigation }) {
           color: colors.textPrimary,
           fontFamily: typography.fontFamily.header,
           fontSize: typography.sizes.xxl,
-          marginBottom: spacing.lg,
+          marginBottom: spacing.xs,
           textAlign: 'center',
         }]}>
           RE-ENTER THE FEED
         </Text>
+        <Text style={{
+          color: colors.textSecondary,
+          fontFamily: typography.fontFamily.body,
+          fontSize: typography.sizes.sm,
+          marginBottom: spacing.lg,
+          textAlign: 'center',
+        }}>
+          Sign in using your mobile number and 5-digit key
+        </Text>
 
         <InputField
-          label="EMAIL"
-          placeholder="your.email@example.com"
-          value={email}
-          onChangeText={setEmail}
-          error={errors.email}
-          keyboardType="email-address"
-          autoCapitalize="none"
+          label="PHONE NUMBER"
+          placeholder="10-digit mobile number"
+          value={phone}
+          onChangeText={(val) => setPhone(val.replace(/[^0-9]/g, ''))}
+          error={errors.phone}
+          keyboardType="phone-pad"
+          maxLength={10}
         />
 
         <InputField
-          label="PASSWORD"
-          placeholder="••••••••"
-          value={password}
-          onChangeText={setPassword}
+          label="5-DIGIT PIN"
+          placeholder="•••••"
+          value={pin}
+          onChangeText={(val) => setPin(val.replace(/[^0-9]/g, ''))}
           secureTextEntry
-          error={errors.password}
-          autoCapitalize="none"
+          error={errors.pin}
+          keyboardType="numeric"
+          maxLength={5}
         />
 
         <TouchableOpacity
@@ -72,7 +83,7 @@ export default function LoginScreen({ navigation }) {
           style={styles.forgotBtn}
         >
           <Text style={[styles.forgotText, { color: colors.accent, fontFamily: typography.fontFamily.body, fontSize: typography.sizes.xs }]}>
-            FORGOT PASSWORD?
+            FORGOT 5-DIGIT PIN?
           </Text>
         </TouchableOpacity>
 

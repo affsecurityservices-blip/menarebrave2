@@ -28,8 +28,7 @@ export default function ProfileSetupScreen({ navigation }) {
       avatar: selectedAvatar,
     });
     completeOnboarding();
-    // Auto-login or navigate to Signup/Login
-    await login(username ? `${username}@mab.com` : 'anonymous@mab.com', 'dummyPassword');
+    navigation.navigate('Signup');
   };
 
   return (
