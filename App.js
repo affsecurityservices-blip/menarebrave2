@@ -22,7 +22,7 @@ LogBox.ignoreLogs([
 ]);
 
 // Inject global style & Google Fonts to hide scrollbars and load premium typography on Web/Desktop
-if (Platform.OS === 'web') {
+if (Platform.OS === 'web' && typeof document !== 'undefined') {
   // Suppress warning logs on web console
   const originalWarn = console.warn;
   console.warn = (...args) => {
