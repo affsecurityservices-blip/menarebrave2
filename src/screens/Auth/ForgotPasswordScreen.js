@@ -95,14 +95,14 @@ export default function ForgotPasswordScreen({ navigation }) {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background, padding: spacing.lg }]}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <View style={styles.form}>
           <Text style={[styles.title, {
             color: colors.textPrimary,
             fontFamily: typography.fontFamily.header,
-            fontSize: typography.sizes.xxl,
-            marginBottom: spacing.xs,
+            fontSize: 20,
+            marginBottom: 4,
             textAlign: 'center',
           }]}>
             RECOVER KEYS
@@ -111,9 +111,9 @@ export default function ForgotPasswordScreen({ navigation }) {
           <Text style={[styles.subtitle, {
             color: colors.textSecondary,
             fontFamily: typography.fontFamily.body,
-            fontSize: typography.sizes.sm,
-            lineHeight: 20,
-            marginBottom: spacing.lg,
+            fontSize: 12,
+            lineHeight: 17,
+            marginBottom: 14,
             textAlign: 'center',
           }]}>
             {step === 1
@@ -139,7 +139,8 @@ export default function ForgotPasswordScreen({ navigation }) {
                 variant="primary"
                 onPress={handleLookupQuestion}
                 loading={loading}
-                style={{ marginTop: spacing.md }}
+                style={{ marginTop: 12, paddingVertical: 12 }}
+                textStyle={{ fontSize: 13, letterSpacing: 0.5 }}
               />
             </>
           ) : (
@@ -241,18 +242,22 @@ export default function ForgotPasswordScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   form: {
-    flex: 1,
+    width: '100%',
+    maxWidth: 380,
     justifyContent: 'center',
   },
   title: {
-    fontWeight: '900',
-    letterSpacing: 1.5,
+    fontWeight: '800',
+    letterSpacing: 0.8,
   },
   subtitle: {
     fontWeight: '500',

@@ -166,7 +166,6 @@ export default function PhoneInputWithCountry({
             {
               backgroundColor: colors.surface,
               borderColor: isFocused ? colors.accent : (error ? colors.danger : colors.border),
-              paddingHorizontal: spacing.sm,
             },
           ]}
           onPress={() => setIsModalOpen(true)}
@@ -182,7 +181,6 @@ export default function PhoneInputWithCountry({
               {
                 color: colors.accent,
                 fontFamily: typography.fontFamily.header,
-                fontSize: 14,
               },
             ]}
           >
@@ -190,7 +188,7 @@ export default function PhoneInputWithCountry({
           </Text>
           <MaterialCommunityIcons
             name="menu-down"
-            size={18}
+            size={16}
             color={colors.textSecondary}
           />
         </TouchableOpacity>
@@ -203,10 +201,7 @@ export default function PhoneInputWithCountry({
               backgroundColor: colors.surface,
               color: colors.textPrimary,
               borderColor: isFocused ? colors.accent : (error ? colors.danger : colors.border),
-              padding: spacing.md,
-              borderRadius: spacing.borderRadius.xs,
               fontFamily: typography.fontFamily.body,
-              fontSize: typography.sizes.md,
             },
           ]}
           placeholder={displayCountry?.placeholder || '10-digit mobile number'}
@@ -471,33 +466,36 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   label: {
     fontWeight: '700',
     letterSpacing: 0.5,
+    fontSize: 11,
   },
   countryHeaderBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
     borderRadius: 4,
-    paddingVertical: 3,
-    paddingHorizontal: 8,
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+    maxWidth: '65%',
   },
   countryHeaderPrefix: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '700',
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
   },
   countryHeaderFlag: {
-    fontSize: 13,
-    marginRight: 4,
+    fontSize: 12,
+    marginRight: 3,
   },
   countryHeaderName: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '800',
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
+    flexShrink: 1,
   },
   inputGroup: {
     flexDirection: 'row',
@@ -509,21 +507,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
-    borderRadius: 4,
-    paddingVertical: 14,
-    marginRight: 8,
-    minWidth: 88,
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    marginRight: 6,
+    minWidth: 72,
   },
   countryFlag: {
-    fontSize: 16,
-    marginRight: 4,
+    fontSize: 15,
+    marginRight: 3,
   },
   dialCodeText: {
     fontWeight: '800',
+    fontSize: 13,
   },
   phoneInput: {
     flex: 1,
     borderWidth: 1.5,
+    borderRadius: 8,
+    paddingVertical: 9,
+    paddingHorizontal: 12,
+    fontSize: 14,
   },
   errorText: {
     fontWeight: '500',

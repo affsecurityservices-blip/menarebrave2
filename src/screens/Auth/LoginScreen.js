@@ -44,13 +44,13 @@ export default function LoginScreen({ navigation }) {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background, padding: spacing.lg }]}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.form}>
         <Text style={[styles.title, {
           color: colors.textPrimary,
           fontFamily: typography.fontFamily.header,
-          fontSize: typography.sizes.xxl,
-          marginBottom: spacing.xs,
+          fontSize: 20,
+          marginBottom: 4,
           textAlign: 'center',
         }]}>
           RE-ENTER THE FEED
@@ -58,9 +58,10 @@ export default function LoginScreen({ navigation }) {
         <Text style={{
           color: colors.textSecondary,
           fontFamily: typography.fontFamily.body,
-          fontSize: typography.sizes.sm,
-          marginBottom: spacing.lg,
+          fontSize: 12,
+          marginBottom: 14,
           textAlign: 'center',
+          lineHeight: 17,
         }}>
           Sign in using your mobile number and 5-digit key
         </Text>
@@ -101,7 +102,8 @@ export default function LoginScreen({ navigation }) {
           variant="primary"
           onPress={handleLogin}
           loading={isLoading}
-          style={{ marginTop: spacing.md }}
+          style={{ marginTop: 8, paddingVertical: 12 }}
+          textStyle={{ fontSize: 13, letterSpacing: 0.5 }}
         />
       </View>
 
@@ -109,7 +111,7 @@ export default function LoginScreen({ navigation }) {
         onPress={() => navigation.navigate('Signup')}
         style={styles.signupLink}
       >
-        <Text style={[styles.signupText, { color: colors.textSecondary, fontFamily: typography.fontFamily.body, fontSize: typography.sizes.sm }]}>
+        <Text style={[styles.signupText, { color: colors.textSecondary, fontFamily: typography.fontFamily.body, fontSize: 12 }]}>
           Don't have a shelter? <Text style={{ color: colors.accent, fontWeight: '700' }}>SIGN UP</Text>
         </Text>
       </TouchableOpacity>
@@ -120,26 +122,31 @@ export default function LoginScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     justifyContent: 'space-between',
+    alignItems: 'center',
   },
   form: {
+    width: '100%',
+    maxWidth: 380,
     flex: 1,
     justifyContent: 'center',
   },
   title: {
-    fontWeight: '900',
-    letterSpacing: 1.5,
+    fontWeight: '800',
+    letterSpacing: 0.8,
   },
   forgotBtn: {
     alignSelf: 'flex-end',
-    marginBottom: 20,
+    marginBottom: 14,
   },
   forgotText: {
     fontWeight: '700',
   },
   signupLink: {
     alignSelf: 'center',
-    paddingVertical: 12,
+    paddingVertical: 8,
   },
   signupText: {
     fontWeight: '500',
