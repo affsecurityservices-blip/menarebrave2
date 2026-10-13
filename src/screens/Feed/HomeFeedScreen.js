@@ -34,44 +34,44 @@ export default function HomeFeedScreen({ navigation }) {
     const activeChallenge = challenges[todayIndex];
 
     return (
-      <View style={[styles.resolveCard, { backgroundColor: colors.surface, borderColor: colors.border, padding: spacing.md, borderRadius: spacing.borderRadius.xs, marginBottom: spacing.md }]}>
+      <View style={[styles.resolveCard, { backgroundColor: colors.surface, borderColor: 'rgba(255, 209, 0, 0.25)' }]}>
         <View style={styles.resolveHeader}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <MaterialCommunityIcons name="sword" size={18} color={colors.accent} />
-            <Text style={[styles.resolveTitle, { color: colors.textPrimary, fontFamily: typography.fontFamily.header, fontSize: typography.sizes.sm, marginLeft: 8 }]}>
+            <MaterialCommunityIcons name="sword" size={15} color={colors.accent} />
+            <Text style={[styles.resolveTitle, { color: colors.textPrimary, fontFamily: typography.fontFamily.header, marginLeft: 6 }]}>
               DAILY RESOLVE CHALLENGE
             </Text>
           </View>
           {hasCompletedResolveToday && (
-            <View style={[styles.resolvedBadge, { backgroundColor: colors.yellowMuted, borderColor: colors.accent, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, borderWidth: 1, flexDirection: 'row', alignItems: 'center' }]}>
-              <MaterialCommunityIcons name="check" size={10} color={colors.accent} />
-              <Text style={[styles.resolvedBadgeText, { color: colors.accent, fontFamily: typography.fontFamily.header, fontSize: 8, marginLeft: 2 }]}>
+            <View style={[styles.resolvedBadge, { backgroundColor: colors.yellowMuted, borderColor: colors.accent }]}>
+              <MaterialCommunityIcons name="check" size={9} color={colors.accent} />
+              <Text style={[styles.resolvedBadgeText, { color: colors.accent, fontFamily: typography.fontFamily.header }]}>
                 COMPLETE
               </Text>
             </View>
           )}
         </View>
-        <Text style={[styles.resolveContent, { color: colors.textPrimary, fontFamily: typography.fontFamily.body, fontSize: typography.sizes.sm, marginVertical: spacing.sm, lineHeight: 18 }]}>
+        <Text style={[styles.resolveContent, { color: colors.textPrimary, fontFamily: typography.fontFamily.body }]}>
           "{activeChallenge}"
         </Text>
         
         {hasCompletedResolveToday ? (
-          <View style={[styles.claimSuccessBox, { borderColor: colors.success, borderWidth: 1.5, borderStyle: 'dashed', borderRadius: 4, paddingVertical: spacing.xs + 2, alignItems: 'center', justifyContent: 'center', flexDirection: 'row' }]}>
-            <MaterialCommunityIcons name="check-circle" size={16} color={colors.success} />
-            <Text style={[styles.claimSuccessText, { color: colors.success, fontFamily: typography.fontFamily.header, fontSize: 11, marginLeft: 6, fontWeight: '800', letterSpacing: 0.5 }]}>
+          <View style={[styles.claimSuccessBox, { borderColor: colors.success }]}>
+            <MaterialCommunityIcons name="check-circle" size={14} color={colors.success} />
+            <Text style={[styles.claimSuccessText, { color: colors.success, fontFamily: typography.fontFamily.header }]}>
               STREAK SECURED (+1 DAY)
             </Text>
           </View>
         ) : (
           <TouchableOpacity
-            style={[styles.resolveBtn, { backgroundColor: colors.accent, paddingVertical: 10, borderRadius: 4, alignItems: 'center', justifyContent: 'center' }]}
+            style={[styles.resolveBtn, { backgroundColor: colors.accent }]}
             onPress={() => {
               completeResolve();
               toast.success('Grit affirmed. Daily Resolve Secured!');
             }}
             activeOpacity={0.8}
           >
-            <Text style={[styles.resolveBtnText, { color: colors.background, fontFamily: typography.fontFamily.header, fontSize: 11, fontWeight: '800', letterSpacing: 0.5 }]}>
+            <Text style={[styles.resolveBtnText, { color: colors.background, fontFamily: typography.fontFamily.header }]}>
               AFFIRM & RESOLVE
             </Text>
           </TouchableOpacity>
@@ -94,7 +94,7 @@ export default function HomeFeedScreen({ navigation }) {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Top Banner: Streaks, Notifications, Search */}
-      <View style={[styles.header, { borderBottomColor: colors.border, paddingHorizontal: spacing.md, paddingVertical: spacing.sm }]}>
+      <View style={[styles.header, { borderBottomColor: 'rgba(255, 255, 255, 0.06)' }]}>
         <StreakBadge count={streakCount} />
         <View style={styles.headerActions}>
           <TouchableOpacity
@@ -102,45 +102,47 @@ export default function HomeFeedScreen({ navigation }) {
             style={styles.actionBtn}
             activeOpacity={0.7}
           >
-            <MaterialCommunityIcons name="bell-outline" size={24} color={colors.accent} />
+            <MaterialCommunityIcons name="bell-outline" size={20} color={colors.textSecondary} />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => navigation.navigate('ProfileTab', { screen: 'DailyCheckIn' })}
             style={styles.actionBtn}
             activeOpacity={0.7}
           >
-            <MaterialCommunityIcons name="emoticon-outline" size={24} color={colors.accent} />
+            <MaterialCommunityIcons name="emoticon-outline" size={20} color={colors.textSecondary} />
           </TouchableOpacity>
         </View>
       </View>
 
       {/* Filter Chips */}
-      <View style={[styles.filterBar, { paddingHorizontal: spacing.md, paddingVertical: spacing.sm }]}>
-        {['all', 'post', 'advice'].map((filter) => {
-          const isActive = activeFilter === filter;
+      <View style={styles.filterBar}>
+        {[
+          { key: 'all', label: 'ALL' },
+          { key: 'post', label: 'POSTS' },
+          { key: 'advice', label: 'ADVICE' },
+        ].map((item) => {
+          const isActive = activeFilter === item.key;
           return (
             <TouchableOpacity
-              key={filter}
+              key={item.key}
               style={[
                 styles.chip,
                 {
-                  backgroundColor: isActive ? colors.accent : colors.surface,
-                  borderRadius: spacing.borderRadius.xs - 2,
-                  paddingHorizontal: spacing.md,
-                  paddingVertical: spacing.xs,
+                  backgroundColor: isActive ? colors.accent : 'rgba(255, 255, 255, 0.04)',
+                  borderColor: isActive ? colors.accent : 'rgba(255, 255, 255, 0.08)',
                 }
               ]}
-              onPress={() => setActiveFilter(filter)}
+              onPress={() => setActiveFilter(item.key)}
+              activeOpacity={0.8}
             >
               <Text style={[
                 styles.chipText,
                 {
-                  color: isActive ? colors.background : colors.textSecondary,
+                  color: isActive ? '#000000' : colors.textSecondary,
                   fontFamily: typography.fontFamily.header,
-                  fontSize: 12,
                 }
               ]}>
-                {filter.toUpperCase()}S
+                {item.label}
               </Text>
             </TouchableOpacity>
           );
@@ -153,7 +155,7 @@ export default function HomeFeedScreen({ navigation }) {
         keyExtractor={(item) => item.id}
         renderItem={renderPost}
         ListHeaderComponent={renderDailyResolve}
-        contentContainerStyle={{ paddingHorizontal: spacing.md, paddingBottom: spacing.xl }}
+        contentContainerStyle={{ paddingHorizontal: 12, paddingBottom: 24, paddingTop: 4 }}
         ListEmptyComponent={
           <EmptyState
             icon="ghost"
@@ -175,29 +177,42 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     borderBottomWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
   },
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: 12,
   },
   actionBtn: {
-    padding: 4,
+    padding: 6,
+    borderRadius: 8,
   },
   filterBar: {
     flexDirection: 'row',
     gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
   },
   chip: {
+    paddingHorizontal: 14,
+    paddingVertical: 5,
+    borderRadius: 16,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   chipText: {
+    fontSize: 11,
     fontWeight: '800',
-    letterSpacing: 0.5,
+    letterSpacing: 0.6,
   },
   resolveCard: {
-    borderWidth: 1.5,
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 10,
   },
   resolveHeader: {
     flexDirection: 'row',
@@ -205,25 +220,56 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   resolveTitle: {
+    fontSize: 11.5,
     fontWeight: '800',
     letterSpacing: 0.5,
   },
+  resolvedBadge: {
+    paddingHorizontal: 5,
+    paddingVertical: 1.5,
+    borderRadius: 3,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  resolvedBadgeText: {
+    fontSize: 7.5,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+    marginLeft: 2,
+  },
   resolveContent: {
-    lineHeight: 18,
+    fontSize: 12.5,
+    lineHeight: 17,
     fontStyle: 'italic',
+    marginVertical: 6,
   },
   resolveBtn: {
-    marginTop: 4,
+    paddingVertical: 7,
+    borderRadius: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
   },
   resolveBtnText: {
+    fontSize: 10.5,
     fontWeight: '800',
     letterSpacing: 0.5,
   },
   claimSuccessBox: {
-    marginTop: 4,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderRadius: 4,
+    paddingVertical: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    marginTop: 2,
   },
   claimSuccessText: {
+    fontSize: 10.5,
     fontWeight: '800',
     letterSpacing: 0.5,
+    marginLeft: 5,
   },
 });

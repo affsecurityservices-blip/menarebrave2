@@ -43,128 +43,123 @@ export default function PostCard({ post, onLike, onSave, onCommentPress, onRepor
   };
 
   return (
-    <Animated.View entering={FadeInDown.duration(400)}>
+    <Animated.View entering={FadeInDown.duration(350)}>
       <TouchableOpacity
-      style={[
-        styles.card,
-        {
-          backgroundColor: colors.surface,
-          borderRadius: spacing.borderRadius.sm,
-          borderColor: post.type === 'post' ? colors.yellowMuted : colors.border,
-          borderWidth: post.type === 'post' ? 1.5 : 1,
-          padding: spacing.md,
-          marginBottom: spacing.md,
-        },
-      ]}
-      onPress={onCardPress}
-      activeOpacity={0.9}
-    >
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.headerLeft}
-          onPress={handleProfilePress}
-          activeOpacity={0.7}
-        >
-          <Avatar type={post.avatar} size={40} />
-          <View style={styles.headerInfo}>
-            <View style={styles.authorContainer}>
-              <Text style={[styles.author, { color: colors.textPrimary, fontFamily: typography.fontFamily.body, fontSize: typography.sizes.md }]}>
-                {post.author}
+        style={[
+          styles.card,
+          {
+            backgroundColor: colors.surface,
+            borderColor: post.type === 'advice' ? 'rgba(255, 209, 0, 0.25)' : 'rgba(255, 255, 255, 0.07)',
+          },
+        ]}
+        onPress={onCardPress}
+        activeOpacity={0.9}
+      >
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.headerLeft}
+            onPress={handleProfilePress}
+            activeOpacity={0.7}
+          >
+            <Avatar type={post.avatar} size={34} />
+            <View style={styles.headerInfo}>
+              <View style={styles.authorContainer}>
+                <Text style={[styles.author, { color: colors.textPrimary, fontFamily: typography.fontFamily.body }]}>
+                  {post.author}
+                </Text>
+                {getBadgeAndTitle(post.author) && (
+                  <View style={[styles.badgeContainer, { backgroundColor: colors.yellowMuted, borderColor: getBadgeAndTitle(post.author).color }]}>
+                    <MaterialCommunityIcons name={getBadgeAndTitle(post.author).icon} size={9} color={getBadgeAndTitle(post.author).color} style={{ marginRight: 2 }} />
+                    <Text style={[styles.badgeTextLabel, { color: getBadgeAndTitle(post.author).color, fontFamily: typography.fontFamily.header }]}>
+                      {getBadgeAndTitle(post.author).title}
+                    </Text>
+                  </View>
+                )}
+              </View>
+              <Text style={[styles.time, { color: colors.textSecondary, fontFamily: typography.fontFamily.body }]}>
+                {post.timestamp}
               </Text>
-              {getBadgeAndTitle(post.author) && (
-                <View style={[styles.badgeContainer, { backgroundColor: colors.yellowMuted, borderColor: getBadgeAndTitle(post.author).color }]}>
-                  <MaterialCommunityIcons name={getBadgeAndTitle(post.author).icon} size={10} color={getBadgeAndTitle(post.author).color} style={{ marginRight: 3 }} />
-                  <Text style={[styles.badgeTextLabel, { color: getBadgeAndTitle(post.author).color, fontFamily: typography.fontFamily.header, fontSize: 8 }]}>
-                    {getBadgeAndTitle(post.author).title}
-                  </Text>
-                </View>
-              )}
             </View>
-            <Text style={[styles.time, { color: colors.textSecondary, fontFamily: typography.fontFamily.body, fontSize: typography.sizes.xs }]}>
-              {post.timestamp}
+          </TouchableOpacity>
+          
+          {/* Type Badge (Post / Advice) */}
+          {post.type === 'advice' ? (
+            <View style={[styles.badge, { backgroundColor: colors.yellowMuted, borderColor: colors.accent }]}>
+              <MaterialCommunityIcons name="help-circle-outline" size={10} color={colors.accent} style={{ marginRight: 2 }} />
+              <Text style={[styles.badgeText, { color: colors.accent, fontFamily: typography.fontFamily.header }]}>
+                ADVICE
+              </Text>
+            </View>
+          ) : (
+            <View style={[styles.badge, { backgroundColor: 'rgba(255, 255, 255, 0.04)', borderColor: 'rgba(255, 255, 255, 0.08)' }]}>
+              <Text style={[styles.badgeText, { color: colors.textSecondary, fontFamily: typography.fontFamily.header }]}>
+                POST
+              </Text>
+            </View>
+          )}
+        </View>
+
+        <Text style={[styles.content, {
+          color: colors.textPrimary,
+          fontFamily: typography.fontFamily.body,
+        }]}>
+          {post.content}
+        </Text>
+
+        {post.category && (
+          <View style={styles.categoryContainer}>
+            <Text style={[styles.categoryText, { color: colors.textSecondary }]}>
+              #{post.category}
             </Text>
           </View>
-        </TouchableOpacity>
-        
-        {/* Type Badge (Post / Advice) */}
-        <View style={[styles.badge, {
-          backgroundColor: post.type === 'post' ? colors.yellowMuted : 'rgba(255, 255, 255, 0.05)',
-          borderColor: post.type === 'post' ? colors.accent : colors.border,
-          borderWidth: 1,
-          borderRadius: spacing.borderRadius.xs - 4,
-          paddingHorizontal: spacing.sm,
-          paddingVertical: 2,
-        }]}>
-          <Text style={[styles.badgeText, {
-            color: post.type === 'post' ? colors.accent : colors.textPrimary,
-            fontFamily: typography.fontFamily.header,
-            fontSize: 10,
-            letterSpacing: 0.5,
-          }]}>
-            {post.type.toUpperCase()}
-          </Text>
-        </View>
-      </View>
+        )}
 
-      <Text style={[styles.content, {
-        color: colors.textPrimary,
-        fontFamily: typography.fontFamily.body,
-        fontSize: typography.sizes.md,
-        lineHeight: typography.lineHeights.body,
-        marginVertical: spacing.sm,
-      }]}>
-        {post.content}
-      </Text>
+        <PostActions
+          likesCount={post.likesCount}
+          commentsCount={post.commentsCount}
+          isLiked={post.isLiked}
+          isSaved={post.isSaved}
+          onLike={onLike}
+          onComment={onCommentPress}
+          onSave={onSave}
+          onReport={() => setIsReportModalVisible(true)}
+        />
+      </TouchableOpacity>
 
-      {post.category && (
-        <View style={[styles.categoryContainer, { backgroundColor: colors.surfaceLight, borderRadius: spacing.borderRadius.xs }]}>
-          <Text style={[styles.categoryText, { color: colors.textSecondary, fontSize: 11 }]}>
-            # {post.category}
-          </Text>
-        </View>
-      )}
-
-      <PostActions
-        likesCount={post.likesCount}
-        commentsCount={post.commentsCount}
-        isLiked={post.isLiked}
-        isSaved={post.isSaved}
-        onLike={onLike}
-        onComment={onCommentPress}
-        onSave={onSave}
-        onReport={() => setIsReportModalVisible(true)}
+      {/* Report Modal System */}
+      <ReportModal
+        visible={isReportModalVisible}
+        onClose={() => setIsReportModalVisible(false)}
+        onSubmit={handleReportSubmit}
       />
-    </TouchableOpacity>
-
-    {/* Report Modal System */}
-    <ReportModal
-      visible={isReportModalVisible}
-      onClose={() => setIsReportModalVisible(false)}
-      onSubmit={handleReportSubmit}
-    />
-  </Animated.View>
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 12,
+    marginBottom: 10,
     ...Platform.select({
       web: {
-        boxShadow: '0px 2px 3.84px rgba(0, 0, 0, 0.25)',
+        boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.2)',
       },
       default: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        elevation: 5,
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
+        elevation: 2,
       },
     }),
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    justifyContent: 'space-between',
+    marginBottom: 6,
   },
   headerLeft: {
     flexDirection: 'row',
@@ -172,32 +167,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerInfo: {
-    marginLeft: 12,
+    marginLeft: 10,
     flex: 1,
-  },
-  author: {
-    fontWeight: '700',
-  },
-  time: {
-    marginTop: 2,
-  },
-  badge: {
-    alignSelf: 'flex-start',
-  },
-  badgeText: {
-    fontWeight: '800',
-  },
-  content: {
-    fontWeight: '400',
-  },
-  categoryContainer: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    marginTop: 4,
-  },
-  categoryText: {
-    fontWeight: '600',
   },
   authorContainer: {
     flexDirection: 'row',
@@ -205,16 +176,60 @@ const styles = StyleSheet.create({
     gap: 6,
     flexWrap: 'wrap',
   },
+  author: {
+    fontSize: 13.5,
+    fontWeight: '700',
+  },
   badgeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderRadius: 4,
+    borderRadius: 3,
     paddingHorizontal: 5,
     paddingVertical: 1,
   },
   badgeTextLabel: {
+    fontSize: 8,
+    fontWeight: '800',
+    letterSpacing: 0.4,
+  },
+  time: {
+    fontSize: 11,
+    marginTop: 1,
+  },
+  badge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    alignSelf: 'flex-start',
+  },
+  badgeText: {
+    fontSize: 9,
     fontWeight: '800',
     letterSpacing: 0.5,
+  },
+  content: {
+    fontSize: 13.5,
+    lineHeight: 19.5,
+    fontWeight: '400',
+    marginVertical: 6,
+  },
+  categoryContainer: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(255, 255, 255, 0.035)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderWidth: 1,
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    marginTop: 2,
+    marginBottom: 4,
+  },
+  categoryText: {
+    fontSize: 10.5,
+    fontWeight: '600',
   },
 });

@@ -64,9 +64,9 @@ export default function CommentItem({ comment, onReply }) {
           <Text style={[styles.content, {
             color: colors.textPrimary,
             fontFamily: typography.fontFamily.body,
-            fontSize: typography.sizes.md,
-            lineHeight: typography.lineHeights.body - 4,
-            marginTop: spacing.xs,
+            fontSize: 13,
+            lineHeight: 18,
+            marginTop: 4,
           }]}>
             {comment.content}
           </Text>

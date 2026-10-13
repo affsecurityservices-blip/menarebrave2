@@ -120,14 +120,14 @@ export default function ProfileScreen({ navigation }) {
         {/* Avatar Overlay */}
         <View style={styles.profileRow}>
           <View style={[styles.avatarContainer, { backgroundColor: colors.background, borderColor: colors.background }]}>
-            <Avatar type={user?.avatar || 'anonymous'} size={80} />
+            <Avatar type={user?.avatar || 'anonymous'} size={68} />
           </View>
         </View>
 
         {/* Username, Handle and Status Indicator */}
-        <View style={{ marginTop: spacing.xs }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Text style={[styles.username, { color: colors.textPrimary, fontFamily: typography.fontFamily.header, fontSize: typography.sizes.xl }]}>
+        <View style={{ marginTop: 6 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Text style={[styles.username, { color: colors.textPrimary, fontFamily: typography.fontFamily.header }]}>
               {user?.username || 'Anonymous Member'}
             </Text>
             <View style={[styles.roleBadge, { backgroundColor: colors.yellowMuted, borderColor: colors.accent }]}>
@@ -137,7 +137,7 @@ export default function ProfileScreen({ navigation }) {
             </View>
           </View>
           
-          <Text style={[styles.handleText, { color: colors.textSecondary, fontFamily: typography.fontFamily.body, fontSize: 12, marginTop: 2 }]}>
+          <Text style={[styles.handleText, { color: colors.textSecondary, fontFamily: typography.fontFamily.body }]}>
             u/{(user?.username || 'anonymous').toLowerCase().replace(/[^a-z0-9]/g, '')} • {isUserAnonymous ? 'Ghost Shield Active' : 'Public Profile Active'}
           </Text>
         </View>
@@ -401,7 +401,7 @@ const styles = StyleSheet.create({
   },
   coverGradient: {
     width: '100%',
-    height: 120,
+    height: 100,
   },
   customHeader: {
     position: 'absolute',
@@ -411,9 +411,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   headerCircleBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -424,13 +424,13 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   avatarContainer: {
-    width: 86,
-    height: 86,
-    borderRadius: 43,
-    borderWidth: 3,
+    width: 74,
+    height: 74,
+    borderRadius: 37,
+    borderWidth: 2.5,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: -43,
+    marginTop: -37,
     ...Platform.select({
       web: {
         boxShadow: '0px 2px 3px rgba(0, 0, 0, 0.3)',
@@ -445,31 +445,34 @@ const styles = StyleSheet.create({
     }),
   },
   username: {
+    fontSize: 17,
     fontWeight: '800',
     letterSpacing: 0.5,
   },
   roleBadge: {
     borderWidth: 1,
     borderRadius: 4,
-    paddingHorizontal: 6,
+    paddingHorizontal: 5,
     paddingVertical: 1,
   },
   roleBadgeText: {
-    fontSize: 9,
+    fontSize: 8.5,
     fontWeight: '800',
     letterSpacing: 0.5,
   },
   handleText: {
+    fontSize: 11,
     fontWeight: '500',
+    marginTop: 2,
   },
   anonymityCard: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderWidth: 1.5,
-    borderRadius: 8,
-    padding: 12,
-    marginTop: 14,
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 10,
+    marginTop: 10,
   },
   anonymityLeft: {
     flex: 1,
@@ -478,34 +481,34 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   anonymityIconBadge: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     alignItems: 'center',
     justifyContent: 'center',
   },
   anonymityTitle: {
-    fontSize: 12,
-    fontWeight: '900',
-    letterSpacing: 0.8,
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.6,
   },
   anonymitySub: {
-    fontSize: 11,
-    lineHeight: 15,
-    marginTop: 2,
+    fontSize: 10.5,
+    lineHeight: 14,
+    marginTop: 1,
   },
   switchModeBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
     borderRadius: 4,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   switchModeBtnText: {
-    fontSize: 11,
-    fontWeight: '900',
-    letterSpacing: 0.8,
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.6,
   },
   statsContainer: {
     flexDirection: 'row',
@@ -514,8 +517,8 @@ const styles = StyleSheet.create({
     width: '100%',
     borderTopWidth: StyleSheet.hairlineWidth,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    paddingVertical: 12,
-    marginTop: 14,
+    paddingVertical: 10,
+    marginTop: 10,
   },
   statBox: {
     flex: 1,
