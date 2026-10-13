@@ -150,7 +150,8 @@ export default function ProfileScreen({ navigation }) {
           </Text>
           <Text style={[styles.aboutText, { color: colors.textPrimary, fontFamily: typography.fontFamily.body, fontSize: 13, lineHeight: 22 }]}>
             Username: <Text style={{ fontWeight: '700' }}>u/{user?.username || 'Anonymous Member'}</Text>{"\n"}
-            Email Address: <Text style={{ color: colors.textSecondary }}>{user?.email || 'N/A'}</Text>
+            Shelter Region: <Text style={{ color: colors.accent, fontWeight: '700' }}>{user?.country || 'India'} ({user?.countryCode || '+91'})</Text>{"\n"}
+            Mobile Key: <Text style={{ color: colors.textSecondary }}>{user?.phone || user?.email?.split('@')[0] || 'N/A'}</Text>
           </Text>
         </View>
 

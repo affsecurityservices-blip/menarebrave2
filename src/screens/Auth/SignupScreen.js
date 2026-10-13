@@ -5,7 +5,9 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import Button from '../../components/common/Button';
 import InputField from '../../components/common/InputField';
-import { validatePhone } from '../../utils/validators';
+import PhoneInputWithCountry from '../../components/common/PhoneInputWithCountry';
+import { validateLocalPhone } from '../../utils/validators';
+import { DEFAULT_COUNTRY } from '../../utils/countries';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const SECURITY_QUESTIONS = [
@@ -22,6 +24,8 @@ export default function SignupScreen({ navigation }) {
   const toast = useToast();
 
   const [phone, setPhone] = useState('');
+  const [dialCode, setDialCode] = useState('+91');
+  const [country, setCountry] = useState(DEFAULT_COUNTRY);
   const [selectedQuestion, setSelectedQuestion] = useState(SECURITY_QUESTIONS[0]);
   const [isQuestionDropdownOpen, setIsQuestionDropdownOpen] = useState(false);
   const [securityAnswer, setSecurityAnswer] = useState('');
@@ -33,7 +37,11 @@ export default function SignupScreen({ navigation }) {
 
   const handleSignup = async () => {
     const newErrors = {};
-    if (!validatePhone(phone)) newErrors.phone = 'Enter a valid 10-digit mobile number';
+    if (!validateLocalPhone(phone, country)) {
+      newErrors.phone = country?.dialCode === '+91'
+        ? 'Enter a valid 10-digit mobile number'
+        : 'Enter a valid mobile number for selected country';
+    }
     if (!securityAnswer.trim()) newErrors.securityAnswer = 'Answer is required for recovery';
 
     if (Object.keys(newErrors).length > 0) {
@@ -46,7 +54,14 @@ export default function SignupScreen({ navigation }) {
       // Generate a random 5-digit PIN
       const randomPin = Math.floor(10000 + Math.random() * 90000).toString();
       
-      const result = await signupWithPhone(phone, randomPin, selectedQuestion, securityAnswer);
+      const result = await signupWithPhone(
+        phone,
+        randomPin,
+        selectedQuestion,
+        securityAnswer,
+        country?.name || 'India',
+        dialCode || '+91'
+      );
       setGeneratedPin(result.pin);
       setShowPinModal(true);
     } catch (err) {
@@ -83,14 +98,15 @@ export default function SignupScreen({ navigation }) {
             Enter your mobile number. A private 5-digit key will be generated for you.
           </Text>
 
-          <InputField
+          <PhoneInputWithCountry
             label="MOBILE NUMBER"
-            placeholder="10-digit phone number"
-            value={phone}
-            onChangeText={(val) => setPhone(val.replace(/[^0-9]/g, ''))}
+            phone={phone}
+            onChangePhone={setPhone}
+            dialCode={dialCode}
+            onChangeDialCode={setDialCode}
+            country={country}
+            onChangeCountry={setCountry}
             error={errors.phone}
-            keyboardType="phone-pad"
-            maxLength={10}
           />
 
           {/* Security Question Selector */}

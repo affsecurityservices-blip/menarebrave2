@@ -30,6 +30,8 @@ export const AuthProvider = ({ children }) => {
           email: authUser.email,
           phone: data.phone,
           securityQuestion: data.security_question,
+          country: data.country || 'India',
+          countryCode: data.country_code || '+91',
           username: data.username,
           avatar: data.avatar,
           streakCount: data.streak_count,
@@ -43,6 +45,8 @@ export const AuthProvider = ({ children }) => {
           id: authUser.id,
           email: authUser.email,
           phone: authUser.email?.split('@')[0],
+          country: 'India',
+          countryCode: '+91',
           username: authUser.user_metadata?.username || authUser.email.split('@')[0],
           avatar: authUser.user_metadata?.avatar || 'batman',
           streakCount: 3,
@@ -88,11 +92,44 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
-  const loginWithPhone = async (phone, pin) => {
-    const cleanPhone = phone.replace(/[^0-9]/g, '');
-    const email = `${cleanPhone}@mab.app`;
-    const internalPassword = `${pin}_mab`;
-    return await login(email, internalPassword);
+  const loginWithPhone = async (phone, pin, dialCode = '+91') => {
+    setIsLoading(true);
+    try {
+      const cleanPhone = phone.replace(/[^0-9]/g, '');
+      const cleanDial = (dialCode || '').replace(/[^0-9]/g, '');
+      const internalPassword = `${pin}_mab`;
+
+      // Try with dialCode prefix first (E.164 standard)
+      const fullCleanPhone = cleanDial ? `${cleanDial}${cleanPhone}` : cleanPhone;
+      const primaryEmail = `${fullCleanPhone}@mab.app`;
+
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: primaryEmail,
+          password: internalPassword,
+        });
+        if (error) throw error;
+        setIsLoading(false);
+        return data;
+      } catch (firstErr) {
+        // If login failed and dialCode was attached, also try legacy email format without dialCode
+        if (cleanDial) {
+          const legacyEmail = `${cleanPhone}@mab.app`;
+          const { data, error: legacyErr } = await supabase.auth.signInWithPassword({
+            email: legacyEmail,
+            password: internalPassword,
+          });
+          if (!legacyErr) {
+            setIsLoading(false);
+            return data;
+          }
+        }
+        throw firstErr;
+      }
+    } catch (err) {
+      setIsLoading(false);
+      throw err;
+    }
   };
 
   const signup = async (email, password) => {
@@ -112,12 +149,17 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
-  const signupWithPhone = async (phone, pin, securityQuestion, securityAnswer) => {
+  const signupWithPhone = async (phone, pin, securityQuestion, securityAnswer, country = 'India', countryCode = '+91') => {
     setIsLoading(true);
     try {
       const cleanPhone = phone.replace(/[^0-9]/g, '');
+      const cleanDial = (countryCode || '').replace(/[^0-9]/g, '');
       const finalPin = pin || Math.floor(10000 + Math.random() * 90000).toString();
-      const email = `${cleanPhone}@mab.app`;
+
+      // Combined phone for storage and auth email
+      const fullPhoneDisplay = `${countryCode} ${cleanPhone}`.trim();
+      const fullCleanPhone = cleanDial ? `${cleanDial}${cleanPhone}` : cleanPhone;
+      const email = `${fullCleanPhone}@mab.app`;
       const internalPassword = `${finalPin}_mab`;
 
       // 1. Create auth user in Supabase
@@ -128,21 +170,25 @@ export const AuthProvider = ({ children }) => {
           data: {
             username: onboardingState.username || cleanPhone,
             avatar: onboardingState.avatar || 'batman',
+            country: country,
+            country_code: countryCode,
           }
         }
       });
       if (signUpError) throw signUpError;
       if (!signUpData?.user) throw new Error('Failed to create account.');
 
-      // 2. Call server-side complete_phone_signup RPC
+      // 2. Call server-side complete_phone_signup RPC with country and country_code
       const { data: rpcData, error: rpcError } = await supabase.rpc('complete_phone_signup', {
         p_user_id: signUpData.user.id,
-        p_phone: cleanPhone,
+        p_phone: fullPhoneDisplay,
         p_password: finalPin,
         p_security_question: securityQuestion,
         p_security_answer: securityAnswer,
         p_age_range: onboardingState.ageRange || null,
         p_interests: onboardingState.interests || null,
+        p_country: country,
+        p_country_code: countryCode,
       });
       if (rpcError) throw rpcError;
 
@@ -161,23 +207,43 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const fetchSecurityQuestion = async (phone) => {
+  const fetchSecurityQuestion = async (phone, dialCode = '') => {
     const cleanPhone = phone.replace(/[^0-9]/g, '');
-    const { data, error } = await supabase.rpc('get_phone_security_question', {
-      p_phone: cleanPhone,
+    const cleanDial = (dialCode || '').replace(/[^0-9]/g, '');
+    const fullPhone = cleanDial ? `${cleanDial}${cleanPhone}` : cleanPhone;
+
+    let res = await supabase.rpc('get_phone_security_question', {
+      p_phone: fullPhone,
     });
-    if (error) throw error;
-    return data;
+    if ((res.error || !res.data?.success) && cleanDial) {
+      // Fallback try with local cleanPhone
+      const fallbackRes = await supabase.rpc('get_phone_security_question', {
+        p_phone: cleanPhone,
+      });
+      if (fallbackRes?.data?.success) return fallbackRes.data;
+    }
+    if (res.error) throw res.error;
+    return res.data;
   };
 
-  const resetPasswordWithAnswer = async (phone, answer) => {
+  const resetPasswordWithAnswer = async (phone, answer, dialCode = '') => {
     const cleanPhone = phone.replace(/[^0-9]/g, '');
-    const { data, error } = await supabase.rpc('reset_phone_password', {
-      p_phone: cleanPhone,
+    const cleanDial = (dialCode || '').replace(/[^0-9]/g, '');
+    const fullPhone = cleanDial ? `${cleanDial}${cleanPhone}` : cleanPhone;
+
+    let res = await supabase.rpc('reset_phone_password', {
+      p_phone: fullPhone,
       p_answer: answer,
     });
-    if (error) throw error;
-    return data;
+    if ((res.error || !res.data?.success) && cleanDial) {
+      const fallbackRes = await supabase.rpc('reset_phone_password', {
+        p_phone: cleanPhone,
+        p_answer: answer,
+      });
+      if (fallbackRes?.data?.success) return fallbackRes.data;
+    }
+    if (res.error) throw res.error;
+    return res.data;
   };
 
   const logout = async () => {

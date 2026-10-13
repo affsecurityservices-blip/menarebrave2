@@ -5,7 +5,9 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import Button from '../../components/common/Button';
 import InputField from '../../components/common/InputField';
-import { validatePhone, validatePin } from '../../utils/validators';
+import PhoneInputWithCountry from '../../components/common/PhoneInputWithCountry';
+import { validateLocalPhone, validatePin } from '../../utils/validators';
+import { DEFAULT_COUNTRY } from '../../utils/countries';
 
 export default function LoginScreen({ navigation }) {
   const { colors, typography, spacing } = useTheme();
@@ -13,12 +15,18 @@ export default function LoginScreen({ navigation }) {
   const toast = useToast();
 
   const [phone, setPhone] = useState('');
+  const [dialCode, setDialCode] = useState('+91');
+  const [country, setCountry] = useState(DEFAULT_COUNTRY);
   const [pin, setPin] = useState('');
   const [errors, setErrors] = useState({});
 
   const handleLogin = async () => {
     const newErrors = {};
-    if (!validatePhone(phone)) newErrors.phone = 'Enter a valid 10-digit mobile number';
+    if (!validateLocalPhone(phone, country)) {
+      newErrors.phone = country?.dialCode === '+91'
+        ? 'Enter a valid 10-digit mobile number'
+        : 'Enter a valid mobile number for selected country';
+    }
     if (!validatePin(pin)) newErrors.pin = 'Enter your 5-digit shelter PIN';
 
     if (Object.keys(newErrors).length > 0) {
@@ -28,7 +36,7 @@ export default function LoginScreen({ navigation }) {
 
     try {
       setErrors({});
-      await loginWithPhone(phone, pin);
+      await loginWithPhone(phone, pin, dialCode);
       toast.success('Shield verified. Welcome back.');
     } catch (err) {
       toast.error(err.message || 'Login failed. Please check phone number and 5-digit PIN.');
@@ -57,14 +65,15 @@ export default function LoginScreen({ navigation }) {
           Sign in using your mobile number and 5-digit key
         </Text>
 
-        <InputField
+        <PhoneInputWithCountry
           label="PHONE NUMBER"
-          placeholder="10-digit mobile number"
-          value={phone}
-          onChangeText={(val) => setPhone(val.replace(/[^0-9]/g, ''))}
+          phone={phone}
+          onChangePhone={setPhone}
+          dialCode={dialCode}
+          onChangeDialCode={setDialCode}
+          country={country}
+          onChangeCountry={setCountry}
           error={errors.phone}
-          keyboardType="phone-pad"
-          maxLength={10}
         />
 
         <InputField

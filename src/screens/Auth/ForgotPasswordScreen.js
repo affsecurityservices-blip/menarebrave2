@@ -5,7 +5,9 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import Button from '../../components/common/Button';
 import InputField from '../../components/common/InputField';
-import { validatePhone } from '../../utils/validators';
+import PhoneInputWithCountry from '../../components/common/PhoneInputWithCountry';
+import { validateLocalPhone } from '../../utils/validators';
+import { DEFAULT_COUNTRY } from '../../utils/countries';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function ForgotPasswordScreen({ navigation }) {
@@ -15,6 +17,8 @@ export default function ForgotPasswordScreen({ navigation }) {
 
   const [step, setStep] = useState(1); // 1: Enter Phone, 2: Answer Question
   const [phone, setPhone] = useState('');
+  const [dialCode, setDialCode] = useState('+91');
+  const [country, setCountry] = useState(DEFAULT_COUNTRY);
   const [securityQuestion, setSecurityQuestion] = useState('');
   const [answer, setAnswer] = useState('');
   const [loading, setLoading] = useState(false);
@@ -27,14 +31,18 @@ export default function ForgotPasswordScreen({ navigation }) {
 
   // Step 1: Lookup Security Question
   const handleLookupQuestion = async () => {
-    if (!validatePhone(phone)) {
-      setErrors({ phone: 'Enter a valid 10-digit mobile number' });
+    if (!validateLocalPhone(phone, country)) {
+      setErrors({
+        phone: country?.dialCode === '+91'
+          ? 'Enter a valid 10-digit mobile number'
+          : 'Enter a valid mobile number for selected country'
+      });
       return;
     }
     setErrors({});
     setLoading(true);
     try {
-      const res = await fetchSecurityQuestion(phone);
+      const res = await fetchSecurityQuestion(phone, dialCode);
       setLoading(false);
       if (res?.success && res?.question) {
         setSecurityQuestion(res.question);
@@ -57,7 +65,7 @@ export default function ForgotPasswordScreen({ navigation }) {
     setErrors({});
     setLoading(true);
     try {
-      const res = await resetPasswordWithAnswer(phone, answer);
+      const res = await resetPasswordWithAnswer(phone, answer, dialCode);
       setLoading(false);
       if (res?.success && res?.new_password) {
         setNewPin(res.new_password);
@@ -76,7 +84,7 @@ export default function ForgotPasswordScreen({ navigation }) {
     if (!newPin) return;
     setIsLoggingIn(true);
     try {
-      await loginWithPhone(phone, newPin);
+      await loginWithPhone(phone, newPin, dialCode);
       setShowResultModal(false);
       toast.success('Access restored! Welcome back.');
     } catch (err) {
@@ -115,14 +123,15 @@ export default function ForgotPasswordScreen({ navigation }) {
 
           {step === 1 ? (
             <>
-              <InputField
+              <PhoneInputWithCountry
                 label="MOBILE NUMBER"
-                placeholder="10-digit phone number"
-                value={phone}
-                onChangeText={(val) => setPhone(val.replace(/[^0-9]/g, ''))}
+                phone={phone}
+                onChangePhone={setPhone}
+                dialCode={dialCode}
+                onChangeDialCode={setDialCode}
+                country={country}
+                onChangeCountry={setCountry}
                 error={errors.phone}
-                keyboardType="phone-pad"
-                maxLength={10}
               />
 
               <Button
