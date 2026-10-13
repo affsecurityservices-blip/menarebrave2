@@ -122,14 +122,15 @@ export default function LoginScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   form: {
     width: '100%',
-    maxWidth: 380,
+    maxWidth: 350,
+    alignSelf: 'center',
     flex: 1,
     justifyContent: 'center',
   },

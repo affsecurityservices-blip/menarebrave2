@@ -102,60 +102,24 @@ export default function PhoneInputWithCountry({
 
   return (
     <View style={[styles.container, { marginBottom: spacing.md }, containerStyle]}>
-      {/* Header Row: Label on Left, Country Badge on Right */}
-      <View style={styles.headerRow}>
-        {label && (
-          <Text
-            style={[
-              styles.label,
-              {
-                color: colors.textSecondary,
-                fontFamily: typography.fontFamily.body,
-                fontSize: typography.sizes.xs,
-              },
-            ]}
-          >
-            {label}
-          </Text>
-        )}
-
-        <TouchableOpacity
-          onPress={() => setIsModalOpen(true)}
+      {/* Input Label */}
+      {label && (
+        <Text
           style={[
-            styles.countryHeaderBadge,
+            styles.label,
             {
-              backgroundColor: colors.surface,
-              borderColor: colors.border,
+              color: colors.textSecondary,
+              fontFamily: typography.fontFamily.body,
+              fontSize: typography.sizes.xs,
+              marginBottom: spacing.xs,
+              textTransform: 'uppercase',
+              letterSpacing: 0.5,
             },
           ]}
-          activeOpacity={0.7}
         >
-          <Text style={[styles.countryHeaderPrefix, { color: colors.textSecondary, fontFamily: typography.fontFamily.body }]}>
-            COUNTRY:{' '}
-          </Text>
-          <Text style={styles.countryHeaderFlag}>
-            {displayCountry ? displayCountry.flag : '🌐'}
-          </Text>
-          <Text
-            style={[
-              styles.countryHeaderName,
-              {
-                color: colors.accent,
-                fontFamily: typography.fontFamily.header,
-              },
-            ]}
-            numberOfLines={1}
-          >
-            {displayCountry ? displayCountry.name.toUpperCase() : 'UNKNOWN'} ({dialCode || '+?'})
-          </Text>
-          <MaterialCommunityIcons
-            name="chevron-down"
-            size={14}
-            color={colors.accent}
-            style={{ marginLeft: 3 }}
-          />
-        </TouchableOpacity>
-      </View>
+          {label}
+        </Text>
+      )}
 
       {/* Input Group: Dial Code Prefix + Local Phone Input */}
       <View style={styles.inputGroup}>
@@ -462,40 +426,9 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
   },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
   label: {
     fontWeight: '700',
     letterSpacing: 0.5,
-    fontSize: 11,
-  },
-  countryHeaderBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 4,
-    paddingVertical: 2,
-    paddingHorizontal: 6,
-    maxWidth: '65%',
-  },
-  countryHeaderPrefix: {
-    fontSize: 9,
-    fontWeight: '700',
-    letterSpacing: 0.3,
-  },
-  countryHeaderFlag: {
-    fontSize: 12,
-    marginRight: 3,
-  },
-  countryHeaderName: {
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 0.3,
-    flexShrink: 1,
   },
   inputGroup: {
     flexDirection: 'row',
@@ -511,7 +444,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 8,
     marginRight: 6,
-    minWidth: 72,
+    minWidth: 68,
   },
   countryFlag: {
     fontSize: 15,
@@ -523,6 +456,7 @@ const styles = StyleSheet.create({
   },
   phoneInput: {
     flex: 1,
+    minWidth: 0,
     borderWidth: 1.5,
     borderRadius: 8,
     paddingVertical: 9,

@@ -96,7 +96,12 @@ export default function ForgotPasswordScreen({ navigation }) {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.form}>
           <Text style={[styles.title, {
             color: colors.textPrimary,
@@ -242,18 +247,23 @@ export default function ForgotPasswordScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+  },
+  scrollView: {
+    width: '100%',
+    flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    width: '100%',
   },
   form: {
     width: '100%',
-    maxWidth: 380,
-    justifyContent: 'center',
+    maxWidth: 350,
+    alignSelf: 'center',
   },
   title: {
     fontWeight: '800',

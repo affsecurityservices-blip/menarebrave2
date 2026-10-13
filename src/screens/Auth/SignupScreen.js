@@ -11,10 +11,10 @@ import { DEFAULT_COUNTRY } from '../../utils/countries';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const SECURITY_QUESTIONS = [
-  'What is your secret brotherhood code phrase?',
+  'What was the name of your first school?',
   'What city were you born in?',
   'What was your childhood nickname?',
-  'What was your first pet or mentor name?',
+  'What was the name of your first pet?',
   'What was the model of your first vehicle?',
 ];
 
@@ -92,7 +92,12 @@ export default function SignupScreen({ navigation }) {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.form}>
           <Text style={[styles.title, {
             color: colors.textPrimary,
@@ -278,18 +283,23 @@ export default function SignupScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+  },
+  scrollView: {
+    width: '100%',
+    flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    width: '100%',
   },
   form: {
     width: '100%',
-    maxWidth: 380,
-    justifyContent: 'center',
+    maxWidth: 350,
+    alignSelf: 'center',
   },
   title: {
     fontWeight: '800',
