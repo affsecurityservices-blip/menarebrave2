@@ -42,6 +42,7 @@
     "zustand": "^5.0.15"
   },
   "scripts": {
+    "build": "expo export -p web",
     "start": "expo start",
     "dev": "expo start",
     "android": "expo start --android",
