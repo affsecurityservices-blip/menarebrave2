@@ -192,15 +192,8 @@ export const AuthProvider = ({ children }) => {
       });
       if (rpcError) throw rpcError;
 
-      // 3. Immediately sign in to establish active session
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password: internalPassword,
-      });
-      if (signInError) throw signInError;
-
       setIsLoading(false);
-      return { pin: finalPin, user: signInData.user };
+      return { success: true, pin: finalPin, phone: fullPhoneDisplay, email };
     } catch (err) {
       setIsLoading(false);
       throw err;

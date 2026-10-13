@@ -29,7 +29,7 @@ const SECURITY_QUESTIONS = [
 
 export default function SignupScreen({ navigation }) {
   const { colors, typography, spacing } = useTheme();
-  const { signupWithPhone, isLoading } = useAuth();
+  const { signupWithPhone, loginWithPhone, isLoading } = useAuth();
   const toast = useToast();
 
   const [step, setStep] = useState(1);
@@ -45,6 +45,7 @@ export default function SignupScreen({ navigation }) {
   const [generatedPin, setGeneratedPin] = useState(null);
   const [showPinModal, setShowPinModal] = useState(false);
   const [hasCopiedPin, setHasCopiedPin] = useState(false);
+  const [isEntering, setIsEntering] = useState(false);
 
   const handleContinue = () => {
     const newErrors = {};
@@ -109,10 +110,19 @@ export default function SignupScreen({ navigation }) {
     }
   };
 
-  const handleContinueAfterPin = () => {
-    setShowPinModal(false);
-    toast.success('Account created and logged in!');
-    navigation.navigate('GenderOath');
+  const handleContinueAfterPin = async () => {
+    try {
+      setIsEntering(true);
+      await loginWithPhone(phone, generatedPin, dialCode);
+      setShowPinModal(false);
+      setIsEntering(false);
+      toast.success('Shield verified. Welcome to the feed.');
+    } catch (err) {
+      setIsEntering(false);
+      setShowPinModal(false);
+      toast.info('Account created! Please sign in with your PIN.');
+      navigation.navigate('Login');
+    }
   };
 
   return (
@@ -381,6 +391,7 @@ export default function SignupScreen({ navigation }) {
               title="I HAVE SAVED MY KEY • ENTER"
               variant="primary"
               onPress={handleContinueAfterPin}
+              loading={isEntering}
               style={{ marginTop: 12, paddingVertical: 14, width: '100%' }}
               textStyle={{ fontSize: 13, letterSpacing: 0.8, fontWeight: '800' }}
             />
