@@ -28,8 +28,6 @@ export const AuthProvider = ({ children }) => {
         setUser({
           id: authUser.id,
           email: authUser.email,
-          phone: data.phone,
-          securityQuestion: data.security_question,
           country: data.country || 'India',
           countryCode: data.country_code || '+91',
           username: data.username,
@@ -44,7 +42,6 @@ export const AuthProvider = ({ children }) => {
         setUser({
           id: authUser.id,
           email: authUser.email,
-          phone: authUser.email?.split('@')[0],
           country: 'India',
           countryCode: '+91',
           username: authUser.user_metadata?.username || authUser.email.split('@')[0],
@@ -243,6 +240,39 @@ export const AuthProvider = ({ children }) => {
     return res.data;
   };
 
+  const getMySecurityQuestion = async () => {
+    if (!user?.id) return null;
+    try {
+      const { data, error } = await supabase.rpc('get_my_security_question', {
+        p_user_id: user.id,
+      });
+      if (error || !data?.success) {
+        return user.securityQuestion || null;
+      }
+      return data.question;
+    } catch {
+      return user?.securityQuestion || null;
+    }
+  };
+
+  const updatePasswordWithQuestion = async (answer, newPin) => {
+    if (!user?.id) throw new Error('You must be logged in to update your security PIN.');
+    const cleanPin = (newPin || '').trim();
+    if (!cleanPin || cleanPin.length !== 5 || !/^\d+$/.test(cleanPin)) {
+      throw new Error('PIN must be exactly 5 numeric digits.');
+    }
+    const { data, error } = await supabase.rpc('update_password_with_question', {
+      p_answer: answer,
+      p_new_pin: cleanPin,
+      p_user_id: user.id,
+    });
+    if (error) throw error;
+    if (!data?.success) {
+      throw new Error(data?.error || 'Verification failed. Please check your answer.');
+    }
+    return data;
+  };
+
   const logout = async () => {
     setIsLoading(true);
     await supabase.auth.signOut();
@@ -285,6 +315,8 @@ export const AuthProvider = ({ children }) => {
         signupWithPhone,
         checkPhoneExists,
         fetchSecurityQuestion,
+        getMySecurityQuestion,
+        updatePasswordWithQuestion,
         resetPasswordWithAnswer,
         logout,
         updateOnboarding,

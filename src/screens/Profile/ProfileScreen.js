@@ -151,7 +151,7 @@ export default function ProfileScreen({ navigation }) {
           <Text style={[styles.aboutText, { color: colors.textPrimary, fontFamily: typography.fontFamily.body, fontSize: 13, lineHeight: 22 }]}>
             Username: <Text style={{ fontWeight: '700' }}>u/{user?.username || 'Anonymous Member'}</Text>{"\n"}
             Shelter Region: <Text style={{ color: colors.accent, fontWeight: '700' }}>{user?.country || 'India'} ({user?.countryCode || '+91'})</Text>{"\n"}
-            Mobile Key: <Text style={{ color: colors.textSecondary }}>{user?.phone || user?.email?.split('@')[0] || 'N/A'}</Text>
+            Privacy Shield: <Text style={{ color: colors.success, fontWeight: '700' }}>100% Encrypted & Anonymous</Text>
           </Text>
         </View>
 

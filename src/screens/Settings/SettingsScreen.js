@@ -8,6 +8,7 @@ export default function SettingsScreen({ navigation }) {
 
   const options = [
     { label: 'PRIVACY CONTROLS', icon: 'shield-lock-outline', screen: 'Privacy' },
+    { label: 'UPDATE SECURITY KEY', icon: 'key-change', screen: 'UpdatePassword' },
     { label: 'BLOCKED USERS LIST', icon: 'account-cancel-outline', screen: 'BlockedUsers' },
     { label: 'MY REPORT HISTORY LOG', icon: 'flag-outline', screen: 'ReportHistory' },
     { label: 'THEME MODE CONFIG', icon: 'palette-outline', screen: 'Theme' },

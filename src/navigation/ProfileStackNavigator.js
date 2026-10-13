@@ -8,6 +8,7 @@ import SavedPostsScreen from '../screens/Profile/SavedPostsScreen';
 import MyPostsScreen from '../screens/Profile/MyPostsScreen';
 import SettingsScreen from '../screens/Settings/SettingsScreen';
 import PrivacyScreen from '../screens/Settings/PrivacyScreen';
+import UpdatePasswordScreen from '../screens/Settings/UpdatePasswordScreen';
 import BlockedUsersScreen from '../screens/Settings/BlockedUsersScreen';
 import ReportHistoryScreen from '../screens/Settings/ReportHistoryScreen';
 import ThemeScreen from '../screens/Settings/ThemeScreen';
@@ -52,6 +53,7 @@ export default function ProfileStackNavigator() {
       <Stack.Screen name="MyPosts" component={MyPostsScreen} options={{ title: 'MY LOGS' }} />
       <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: 'SETTINGS' }} />
       <Stack.Screen name="Privacy" component={PrivacyScreen} options={{ title: 'PRIVACY' }} />
+      <Stack.Screen name="UpdatePassword" component={UpdatePasswordScreen} options={{ title: 'SECURITY PIN' }} />
       <Stack.Screen name="BlockedUsers" component={BlockedUsersScreen} options={{ title: 'BLOCKED USERS' }} />
       <Stack.Screen name="ReportHistory" component={ReportHistoryScreen} options={{ title: 'REPORTS' }} />
       <Stack.Screen name="Theme" component={ThemeScreen} options={{ title: 'THEME MODE' }} />
