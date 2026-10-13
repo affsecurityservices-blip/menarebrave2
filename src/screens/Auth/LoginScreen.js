@@ -19,7 +19,7 @@ import { DEFAULT_COUNTRY } from '../../utils/countries';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function LoginScreen({ navigation }) {
-  const { colors, typography, spacing } = useTheme();
+  const { colors, typography } = useTheme();
   const { loginWithPhone, isLoading } = useAuth();
   const toast = useToast();
 
@@ -36,7 +36,7 @@ export default function LoginScreen({ navigation }) {
         ? 'Enter a valid 10-digit mobile number'
         : 'Enter a valid mobile number for selected country';
     }
-    if (!validatePin(pin)) newErrors.pin = 'Enter your 5-digit shelter PIN';
+    if (!validatePin(pin)) newErrors.pin = 'Enter your 5-digit PIN';
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -46,17 +46,16 @@ export default function LoginScreen({ navigation }) {
     try {
       setErrors({});
       await loginWithPhone(phone, pin, dialCode);
-      toast.success('Shield verified. Welcome back.');
+      toast.success('Access verified. Welcome back.');
     } catch (err) {
-      toast.error(err.message || 'Login failed. Please check phone number and 5-digit PIN.');
+      toast.error(err.message || 'Login failed. Please check phone number and PIN.');
     }
   };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Ambient Top Glow */}
       <LinearGradient
-        colors={['rgba(255, 209, 0, 0.10)', 'rgba(255, 209, 0, 0.02)', 'transparent']}
+        colors={['rgba(255, 209, 0, 0.08)', 'rgba(255, 209, 0, 0.01)', 'transparent']}
         style={styles.ambientGlow}
         pointerEvents="none"
       />
@@ -67,12 +66,11 @@ export default function LoginScreen({ navigation }) {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Tactical Shelter Vault Card */}
-        <View style={[styles.shelterCard, {
+        <View style={[styles.card, {
           backgroundColor: colors.surface,
           borderColor: 'rgba(255, 209, 0, 0.22)',
         }]}>
-          {/* Header & Emblem */}
+          {/* Header */}
           <View style={styles.header}>
             <View style={[styles.iconBadge, {
               backgroundColor: colors.yellowMuted,
@@ -85,38 +83,24 @@ export default function LoginScreen({ navigation }) {
               />
             </View>
 
-            {/* Tactical Status Pill */}
-            <View style={[styles.statusPill, {
-              backgroundColor: 'rgba(255, 255, 255, 0.04)',
-              borderColor: colors.border,
-            }]}>
-              <View style={[styles.pulseDot, { backgroundColor: '#10B981' }]} />
-              <Text style={[styles.statusPillText, {
-                color: colors.accent,
-                fontFamily: typography.fontFamily.header,
-              }]}>
-                ENCRYPTED SANCTUARY • SIGN IN
-              </Text>
-            </View>
-
             <Text style={[styles.title, {
               color: colors.textPrimary,
               fontFamily: typography.fontFamily.header,
             }]}>
-              RE-ENTER THE FEED
+              SIGN IN
             </Text>
 
             <Text style={[styles.subtitle, {
               color: colors.textSecondary,
               fontFamily: typography.fontFamily.body,
             }]}>
-              Authenticate using your registered mobile number and private 5-digit shelter PIN.
+              Enter your mobile number and 5-digit key
             </Text>
           </View>
 
           {/* Form Fields */}
           <PhoneInputWithCountry
-            label="REGISTERED MOBILE NUMBER"
+            label="MOBILE NUMBER"
             phone={phone}
             onChangePhone={setPhone}
             dialCode={dialCode}
@@ -124,11 +108,11 @@ export default function LoginScreen({ navigation }) {
             country={country}
             onChangeCountry={setCountry}
             error={errors.phone}
-            containerStyle={{ marginBottom: 14 }}
+            containerStyle={{ marginBottom: 12 }}
           />
 
           <InputField
-            label="5-DIGIT SHELTER PIN"
+            label="5-DIGIT PIN"
             placeholder="•••••"
             value={pin}
             onChangeText={(val) => setPin(val.replace(/[^0-9]/g, ''))}
@@ -143,18 +127,13 @@ export default function LoginScreen({ navigation }) {
             style={styles.forgotBtn}
             activeOpacity={0.8}
           >
-            <MaterialCommunityIcons name="key-change" size={14} color={colors.accent} style={{ marginRight: 5 }} />
-            <Text style={[styles.forgotText, {
-              color: colors.accent,
-              fontFamily: typography.fontFamily.header,
-              fontSize: typography.sizes.xs,
-            }]}>
-              FORGOT 5-DIGIT PIN?
+            <Text style={[styles.forgotText, { color: colors.accent }]}>
+              FORGOT PIN?
             </Text>
           </TouchableOpacity>
 
           <Button
-            title="UNLOCK SHELTER →"
+            title="SIGN IN"
             variant="primary"
             onPress={handleLogin}
             loading={isLoading}
@@ -162,18 +141,7 @@ export default function LoginScreen({ navigation }) {
             textStyle={styles.actionButtonText}
           />
 
-          {/* Privacy & Security Trust Notice */}
-          <View style={[styles.securityNoticeBox, {
-            backgroundColor: 'rgba(255, 209, 0, 0.04)',
-            borderColor: 'rgba(255, 209, 0, 0.12)',
-          }]}>
-            <MaterialCommunityIcons name="incognito" size={16} color={colors.accent} style={{ marginRight: 8 }} />
-            <Text style={[styles.securityNoticeText, { color: colors.textSecondary }]}>
-              Zero logs. Zero passwords stored. Only your 5-digit PIN verifies identity.
-            </Text>
-          </View>
-
-          {/* Sign Up Link Footer */}
+          {/* Sign Up Link */}
           <View style={[styles.cardFooter, { borderTopColor: 'rgba(255, 255, 255, 0.06)' }]}>
             <TouchableOpacity
               onPress={() => navigation.navigate('Signup')}
@@ -185,19 +153,10 @@ export default function LoginScreen({ navigation }) {
                 fontFamily: typography.fontFamily.body,
                 fontSize: 13,
               }]}>
-                Don't have a shelter key yet?{' '}
-                <Text style={{ color: colors.accent, fontWeight: '800' }}>SIGN UP</Text>
+                Don't have a key? <Text style={{ color: colors.accent, fontWeight: '800' }}>SIGN UP</Text>
               </Text>
             </TouchableOpacity>
           </View>
-        </View>
-
-        {/* Footer Brotherhood Tag */}
-        <View style={styles.brotherhoodBanner}>
-          <MaterialCommunityIcons name="shield-check" size={14} color={colors.accent} style={{ marginRight: 6 }} />
-          <Text style={[styles.brotherhoodText, { color: colors.textSecondary }]}>
-            Men Are Brave • Private Anonymous Network
-          </Text>
         </View>
       </ScrollView>
     </View>
@@ -214,7 +173,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: 320,
+    height: 300,
   },
   scrollView: {
     width: '100%',
@@ -228,18 +187,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 24,
   },
-  shelterCard: {
+  card: {
     width: '100%',
-    maxWidth: 440,
+    maxWidth: 400,
     alignSelf: 'center',
     borderRadius: 20,
     borderWidth: 1.5,
-    paddingHorizontal: 24,
-    paddingTop: 28,
-    paddingBottom: 20,
+    paddingHorizontal: 22,
+    paddingTop: 24,
+    paddingBottom: 16,
     ...Platform.select({
       web: {
-        boxShadow: '0 16px 40px rgba(0, 0, 0, 0.65), 0 0 25px rgba(255, 209, 0, 0.06)',
+        boxShadow: '0 16px 40px rgba(0, 0, 0, 0.65), 0 0 25px rgba(255, 209, 0, 0.05)',
       },
       default: {
         shadowColor: '#000000',
@@ -255,13 +214,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   iconBadge: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 14,
+    marginBottom: 12,
     ...Platform.select({
       web: {
         boxShadow: '0 0 16px rgba(255, 209, 0, 0.25)',
@@ -269,57 +228,35 @@ const styles = StyleSheet.create({
       default: {},
     }),
   },
-  statusPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 16,
-    borderWidth: 1,
-    marginBottom: 12,
-  },
-  pulseDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    marginRight: 7,
-  },
-  statusPillText: {
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 0.8,
-  },
   title: {
-    fontSize: 22,
+    fontSize: 21,
     fontWeight: '900',
-    letterSpacing: 1,
+    letterSpacing: 0.8,
     textAlign: 'center',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   subtitle: {
     fontSize: 12,
     textAlign: 'center',
-    lineHeight: 18,
-    paddingHorizontal: 12,
+    lineHeight: 17,
   },
   forgotBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
     alignSelf: 'flex-end',
     marginTop: -4,
     marginBottom: 16,
     paddingVertical: 4,
   },
   forgotText: {
+    fontSize: 11,
     fontWeight: '800',
     letterSpacing: 0.5,
   },
   actionButton: {
-    paddingVertical: 14,
+    paddingVertical: 13,
     borderRadius: 10,
     ...Platform.select({
       web: {
-        boxShadow: '0 4px 14px rgba(255, 209, 0, 0.3)',
+        boxShadow: '0 4px 14px rgba(255, 209, 0, 0.25)',
       },
       default: {
         shadowColor: '#FFD100',
@@ -335,24 +272,10 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: 0.8,
   },
-  securityNoticeBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    marginTop: 18,
-  },
-  securityNoticeText: {
-    fontSize: 11,
-    lineHeight: 15,
-    flex: 1,
-  },
   cardFooter: {
     borderTopWidth: 1,
     marginTop: 18,
-    paddingTop: 14,
+    paddingTop: 12,
     alignItems: 'center',
   },
   signupLink: {
@@ -361,17 +284,4 @@ const styles = StyleSheet.create({
   signupText: {
     fontWeight: '500',
   },
-  brotherhoodBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 18,
-    opacity: 0.75,
-  },
-  brotherhoodText: {
-    fontSize: 11,
-    fontWeight: '500',
-    letterSpacing: 0.3,
-  },
 });
-

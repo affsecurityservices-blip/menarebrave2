@@ -32,7 +32,7 @@ export default function SignupScreen({ navigation }) {
   const { signupWithPhone, isLoading } = useAuth();
   const toast = useToast();
 
-  const [step, setStep] = useState(1); // 1: Phone number, 2: Security recovery challenge
+  const [step, setStep] = useState(1);
   const [phone, setPhone] = useState('');
   const [dialCode, setDialCode] = useState('+91');
   const [country, setCountry] = useState(DEFAULT_COUNTRY);
@@ -76,7 +76,6 @@ export default function SignupScreen({ navigation }) {
 
     try {
       setErrors({});
-      // Generate a random 5-digit PIN
       const randomPin = Math.floor(10000 + Math.random() * 90000).toString();
 
       const result = await signupWithPhone(
@@ -118,9 +117,8 @@ export default function SignupScreen({ navigation }) {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Ambient Top Glow to eliminate void feeling */}
       <LinearGradient
-        colors={['rgba(255, 209, 0, 0.10)', 'rgba(255, 209, 0, 0.02)', 'transparent']}
+        colors={['rgba(255, 209, 0, 0.08)', 'rgba(255, 209, 0, 0.01)', 'transparent']}
         style={styles.ambientGlow}
         pointerEvents="none"
       />
@@ -131,12 +129,11 @@ export default function SignupScreen({ navigation }) {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Sleek Tactical Shelter Card */}
-        <View style={[styles.shelterCard, {
+        <View style={[styles.card, {
           backgroundColor: colors.surface,
           borderColor: 'rgba(255, 209, 0, 0.22)',
         }]}>
-          {/* Top Vault Badge & Step Indicator */}
+          {/* Glowing Emblem */}
           <View style={styles.header}>
             <View style={[styles.iconBadge, {
               backgroundColor: colors.yellowMuted,
@@ -147,20 +144,6 @@ export default function SignupScreen({ navigation }) {
                 size={28}
                 color={colors.accent}
               />
-            </View>
-
-            {/* Tactical Status Pill */}
-            <View style={[styles.stepPill, {
-              backgroundColor: 'rgba(255, 255, 255, 0.04)',
-              borderColor: colors.border,
-            }]}>
-              <View style={[styles.pulseDot, { backgroundColor: colors.accent }]} />
-              <Text style={[styles.stepPillText, {
-                color: colors.accent,
-                fontFamily: typography.fontFamily.header,
-              }]}>
-                {step === 1 ? 'STEP 1 OF 2 • SECURE ACCESS' : 'STEP 2 OF 2 • RECOVERY KEY'}
-              </Text>
             </View>
 
             <Text style={[styles.title, {
@@ -175,34 +158,21 @@ export default function SignupScreen({ navigation }) {
               fontFamily: typography.fontFamily.body,
             }]}>
               {step === 1
-                ? 'Enter your mobile number. A private 5-digit encrypted key will be generated for your shelter.'
-                : 'Set a secret question so you can recover your 5-digit key if you ever switch or lose your device.'}
+                ? 'Generate your private 5-digit encrypted key'
+                : 'Set a secret answer to restore your key anytime'}
             </Text>
-          </View>
 
-          {/* Stepper Progress Bar */}
-          <View style={styles.stepperContainer}>
+            {/* Ultra-minimal step bar */}
             <View style={styles.stepperTrack}>
               <View style={[styles.stepperSegment, { backgroundColor: colors.accent }]} />
               <View style={[styles.stepperSegment, {
                 backgroundColor: step === 2 ? colors.accent : 'rgba(255, 255, 255, 0.12)',
               }]} />
             </View>
-            <View style={styles.stepperLabelsRow}>
-              <Text style={[styles.stepperLabel, { color: colors.accent }]}>
-                1. Mobile Key {step === 2 ? '✓' : ''}
-              </Text>
-              <Text style={[styles.stepperLabel, {
-                color: step === 2 ? colors.accent : colors.textSecondary,
-              }]}>
-                2. Recovery Shield
-              </Text>
-            </View>
           </View>
 
           {step === 1 ? (
             <>
-              {/* Step 1: Mobile Number Input with Live Country Detection */}
               <PhoneInputWithCountry
                 label="MOBILE NUMBER"
                 phone={phone}
@@ -212,75 +182,28 @@ export default function SignupScreen({ navigation }) {
                 country={country}
                 onChangeCountry={setCountry}
                 error={errors.phone}
-                containerStyle={{ marginBottom: 12 }}
+                containerStyle={{ marginBottom: 16 }}
               />
 
-              {/* Privacy Helper Note */}
-              <View style={styles.privacyNoticeRow}>
-                <MaterialCommunityIcons name="shield-check-outline" size={15} color={colors.accent} />
-                <Text style={[styles.privacyNoticeText, { color: colors.textSecondary }]}>
-                  Your number is encrypted & used only for authentication. Never displayed publicly.
-                </Text>
-              </View>
-
-              {/* Action Button */}
               <Button
-                title="CONTINUE TO RECOVERY →"
+                title="CONTINUE"
                 variant="primary"
                 onPress={handleContinue}
                 style={styles.actionButton}
                 textStyle={styles.actionButtonText}
               />
-
-              {/* Tactical Security Trust Badges Grid */}
-              <View style={[styles.trustBox, {
-                backgroundColor: 'rgba(255, 209, 0, 0.04)',
-                borderColor: 'rgba(255, 209, 0, 0.15)',
-              }]}>
-                <View style={styles.trustItem}>
-                  <MaterialCommunityIcons name="incognito" size={20} color={colors.accent} />
-                  <Text style={[styles.trustItemTitle, { color: colors.textPrimary }]}>100% Anonymous</Text>
-                  <Text style={[styles.trustItemSub, { color: colors.textSecondary }]}>Zero names or emails</Text>
-                </View>
-                <View style={[styles.trustDivider, { backgroundColor: colors.border }]} />
-                <View style={styles.trustItem}>
-                  <MaterialCommunityIcons name="key-wireless" size={20} color={colors.accent} />
-                  <Text style={[styles.trustItemTitle, { color: colors.textPrimary }]}>Device-Only PIN</Text>
-                  <Text style={[styles.trustItemSub, { color: colors.textSecondary }]}>Private shelter key</Text>
-                </View>
-                <View style={[styles.trustDivider, { backgroundColor: colors.border }]} />
-                <View style={styles.trustItem}>
-                  <MaterialCommunityIcons name="shield-lock-open-outline" size={20} color={colors.accent} />
-                  <Text style={[styles.trustItemTitle, { color: colors.textPrimary }]}>No Passwords</Text>
-                  <Text style={[styles.trustItemSub, { color: colors.textSecondary }]}>Zero breach risk</Text>
-                </View>
-              </View>
             </>
           ) : (
             <>
-              {/* Step 2: Registered Mobile Confirmation Badge */}
+              {/* Confirmed Mobile Badge */}
               <View style={[styles.phoneBadgeBox, {
                 backgroundColor: 'rgba(255, 209, 0, 0.05)',
                 borderColor: 'rgba(255, 209, 0, 0.22)',
               }]}>
-                <View style={styles.phoneBadgeLeft}>
-                  <MaterialCommunityIcons name="cellphone-check" size={20} color={colors.accent} style={{ marginRight: 10 }} />
-                  <View>
-                    <Text style={[styles.phoneBadgeLabel, { color: colors.textSecondary }]}>
-                      REGISTERED DEVICE KEY
-                    </Text>
-                    <Text style={[styles.phoneBadgeValue, { color: colors.textPrimary }]}>
-                      {country?.flag} {dialCode} {phone}
-                    </Text>
-                  </View>
-                </View>
-                <View style={[styles.verifiedPill, {
-                  backgroundColor: 'rgba(42, 157, 143, 0.18)',
-                  borderColor: '#2A9D8F',
-                }]}>
-                  <MaterialCommunityIcons name="check-circle" size={13} color="#2A9D8F" />
-                  <Text style={styles.verifiedPillText}>READY</Text>
-                </View>
+                <Text style={{ color: colors.textPrimary, fontWeight: '700', fontSize: 13 }}>
+                  {country?.flag} {dialCode} {phone}
+                </Text>
+                <MaterialCommunityIcons name="check-circle" size={16} color="#2A9D8F" />
               </View>
 
               {/* Security Question Selector */}
@@ -289,7 +212,7 @@ export default function SignupScreen({ navigation }) {
                 fontFamily: typography.fontFamily.body,
                 fontSize: typography.sizes.xs,
               }]}>
-                SECURITY RECOVERY QUESTION
+                SECURITY QUESTION
               </Text>
 
               <TouchableOpacity
@@ -351,8 +274,8 @@ export default function SignupScreen({ navigation }) {
               )}
 
               <InputField
-                label="SECURITY ANSWER (FOR RECOVERY)"
-                placeholder="Your secret answer..."
+                label="SECRET ANSWER"
+                placeholder="Your answer..."
                 value={securityAnswer}
                 onChangeText={setSecurityAnswer}
                 error={errors.securityAnswer}
@@ -360,7 +283,7 @@ export default function SignupScreen({ navigation }) {
               />
 
               <Button
-                title="GENERATE 5-DIGIT KEY & SIGN UP"
+                title="GENERATE KEY"
                 variant="primary"
                 onPress={handleSignup}
                 loading={isLoading}
@@ -373,15 +296,14 @@ export default function SignupScreen({ navigation }) {
                 style={styles.backPhoneBtn}
                 activeOpacity={0.7}
               >
-                <MaterialCommunityIcons name="arrow-left" size={15} color={colors.textSecondary} style={{ marginRight: 6 }} />
-                <Text style={{ color: colors.textSecondary, fontSize: 13, fontWeight: '600' }}>
-                  Change mobile number
+                <Text style={{ color: colors.textSecondary, fontSize: 12, fontWeight: '600' }}>
+                  ← Change number
                 </Text>
               </TouchableOpacity>
             </>
           )}
 
-          {/* Sign In Link at the bottom of the card */}
+          {/* Sign In Link */}
           <View style={[styles.cardFooter, { borderTopColor: 'rgba(255, 255, 255, 0.06)' }]}>
             <TouchableOpacity
               onPress={() => navigation.navigate('Login')}
@@ -398,14 +320,6 @@ export default function SignupScreen({ navigation }) {
             </TouchableOpacity>
           </View>
         </View>
-
-        {/* Brotherhood Security Tagline at bottom of page */}
-        <View style={styles.brotherhoodBanner}>
-          <MaterialCommunityIcons name="shield-lock" size={14} color={colors.accent} style={{ marginRight: 6 }} />
-          <Text style={[styles.brotherhoodText, { color: colors.textSecondary }]}>
-            Protected Brotherhood Sanctuary • Zero Logs Policy
-          </Text>
-        </View>
       </ScrollView>
 
       {/* Generated 5-digit PIN Reveal Modal */}
@@ -420,21 +334,21 @@ export default function SignupScreen({ navigation }) {
             borderColor: colors.accent,
           }]}>
             <View style={[styles.modalBadge, { backgroundColor: colors.yellowMuted }]}>
-              <MaterialCommunityIcons name="shield-key" size={40} color={colors.accent} />
+              <MaterialCommunityIcons name="shield-key" size={36} color={colors.accent} />
             </View>
 
             <Text style={[styles.modalTitle, {
               color: colors.textPrimary,
               fontFamily: typography.fontFamily.header,
             }]}>
-              YOUR 5-DIGIT SHELTER KEY
+              YOUR 5-DIGIT KEY
             </Text>
 
             <Text style={[styles.modalSubtitle, {
               color: colors.textSecondary,
               fontFamily: typography.fontFamily.body,
             }]}>
-              Save this private PIN! You will need your Phone Number and this PIN to sign in again.
+              Save this PIN to sign into your shelter.
             </Text>
 
             <TouchableOpacity
@@ -454,30 +368,20 @@ export default function SignupScreen({ navigation }) {
               <View style={styles.copyRow}>
                 <MaterialCommunityIcons
                   name={hasCopiedPin ? 'check' : 'content-copy'}
-                  size={14}
+                  size={13}
                   color={colors.accent}
                 />
                 <Text style={[styles.copyText, { color: colors.accent }]}>
-                  {hasCopiedPin ? 'COPIED TO CLIPBOARD' : 'TAP TO COPY PIN'}
+                  {hasCopiedPin ? 'COPIED' : 'TAP TO COPY'}
                 </Text>
               </View>
             </TouchableOpacity>
-
-            <View style={[styles.pinWarningBox, { backgroundColor: 'rgba(255, 255, 255, 0.03)' }]}>
-              <MaterialCommunityIcons name="information-outline" size={16} color={colors.accent} style={{ marginRight: 8, marginTop: 1 }} />
-              <Text style={[styles.pinWarning, {
-                color: colors.textSecondary,
-                fontFamily: typography.fontFamily.body,
-              }]}>
-                Tip: If you forget this key, you can reset it anytime using your security question.
-              </Text>
-            </View>
 
             <Button
               title="I HAVE SAVED MY KEY • ENTER"
               variant="primary"
               onPress={handleContinueAfterPin}
-              style={{ marginTop: 16, paddingVertical: 14 }}
+              style={{ marginTop: 12, paddingVertical: 14, width: '100%' }}
               textStyle={{ fontSize: 13, letterSpacing: 0.8, fontWeight: '800' }}
             />
           </View>
@@ -497,7 +401,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: 320,
+    height: 300,
   },
   scrollView: {
     width: '100%',
@@ -511,18 +415,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 24,
   },
-  shelterCard: {
+  card: {
     width: '100%',
-    maxWidth: 440,
+    maxWidth: 400,
     alignSelf: 'center',
     borderRadius: 20,
     borderWidth: 1.5,
-    paddingHorizontal: 24,
-    paddingTop: 28,
-    paddingBottom: 20,
+    paddingHorizontal: 22,
+    paddingTop: 24,
+    paddingBottom: 16,
     ...Platform.select({
       web: {
-        boxShadow: '0 16px 40px rgba(0, 0, 0, 0.65), 0 0 25px rgba(255, 209, 0, 0.06)',
+        boxShadow: '0 16px 40px rgba(0, 0, 0, 0.65), 0 0 25px rgba(255, 209, 0, 0.05)',
       },
       default: {
         shadowColor: '#000000',
@@ -535,16 +439,16 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    marginBottom: 18,
+    marginBottom: 20,
   },
   iconBadge: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 14,
+    marginBottom: 12,
     ...Platform.select({
       web: {
         boxShadow: '0 0 16px rgba(255, 209, 0, 0.25)',
@@ -552,85 +456,38 @@ const styles = StyleSheet.create({
       default: {},
     }),
   },
-  stepPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 16,
-    borderWidth: 1,
-    marginBottom: 12,
-  },
-  pulseDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    marginRight: 7,
-  },
-  stepPillText: {
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 0.8,
-  },
   title: {
-    fontSize: 22,
+    fontSize: 21,
     fontWeight: '900',
-    letterSpacing: 1,
+    letterSpacing: 0.8,
     textAlign: 'center',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   subtitle: {
     fontSize: 12,
     textAlign: 'center',
-    lineHeight: 18,
-    paddingHorizontal: 12,
-  },
-  stepperContainer: {
-    marginBottom: 20,
-    marginTop: 4,
+    lineHeight: 17,
+    marginBottom: 14,
   },
   stepperTrack: {
     flexDirection: 'row',
-    height: 4,
+    width: 70,
+    height: 3,
     borderRadius: 2,
     overflow: 'hidden',
-    gap: 6,
-    marginBottom: 6,
+    gap: 4,
   },
   stepperSegment: {
     flex: 1,
-    height: 4,
+    height: 3,
     borderRadius: 2,
   },
-  stepperLabelsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 2,
-  },
-  stepperLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 0.3,
-  },
-  privacyNoticeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 2,
-    marginBottom: 16,
-    paddingHorizontal: 4,
-  },
-  privacyNoticeText: {
-    fontSize: 11,
-    marginLeft: 6,
-    lineHeight: 15,
-    flex: 1,
-  },
   actionButton: {
-    paddingVertical: 14,
+    paddingVertical: 13,
     borderRadius: 10,
     ...Platform.select({
       web: {
-        boxShadow: '0 4px 14px rgba(255, 209, 0, 0.3)',
+        boxShadow: '0 4px 14px rgba(255, 209, 0, 0.25)',
       },
       default: {
         shadowColor: '#FFD100',
@@ -646,75 +503,15 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: 0.8,
   },
-  trustBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    marginTop: 20,
-  },
-  trustItem: {
-    flex: 1,
-    alignItems: 'center',
-    paddingHorizontal: 4,
-  },
-  trustItemTitle: {
-    fontSize: 11,
-    fontWeight: '800',
-    marginTop: 5,
-    textAlign: 'center',
-  },
-  trustItemSub: {
-    fontSize: 9.5,
-    marginTop: 2,
-    textAlign: 'center',
-  },
-  trustDivider: {
-    width: 1,
-    height: 32,
-    opacity: 0.4,
-  },
   phoneBadgeBox: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderWidth: 1.5,
     borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    marginBottom: 18,
-  },
-  phoneBadgeLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  phoneBadgeLabel: {
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-  },
-  phoneBadgeValue: {
-    fontSize: 14,
-    fontWeight: '800',
-    marginTop: 2,
-  },
-  verifiedPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  verifiedPillText: {
-    color: '#2A9D8F',
-    fontSize: 10,
-    fontWeight: '800',
-    marginLeft: 3,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginBottom: 16,
   },
   inputLabel: {
     fontWeight: '700',
@@ -737,17 +534,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   backPhoneBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
     alignSelf: 'center',
-    paddingVertical: 12,
-    marginTop: 8,
+    paddingVertical: 10,
+    marginTop: 6,
   },
   cardFooter: {
     borderTopWidth: 1,
     marginTop: 18,
-    paddingTop: 14,
+    paddingTop: 12,
     alignItems: 'center',
   },
   loginLink: {
@@ -755,18 +549,6 @@ const styles = StyleSheet.create({
   },
   loginText: {
     fontWeight: '500',
-  },
-  brotherhoodBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 18,
-    opacity: 0.75,
-  },
-  brotherhoodText: {
-    fontSize: 11,
-    fontWeight: '500',
-    letterSpacing: 0.3,
   },
   modalOverlay: {
     flex: 1,
@@ -777,10 +559,10 @@ const styles = StyleSheet.create({
   },
   modalCard: {
     width: '100%',
-    maxWidth: 390,
+    maxWidth: 360,
     borderRadius: 20,
     borderWidth: 2,
-    padding: 26,
+    padding: 22,
     alignItems: 'center',
     ...Platform.select({
       web: {
@@ -792,15 +574,15 @@ const styles = StyleSheet.create({
     }),
   },
   modalBadge: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 14,
+    marginBottom: 12,
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '900',
     textAlign: 'center',
     letterSpacing: 1,
@@ -808,46 +590,32 @@ const styles = StyleSheet.create({
   modalSubtitle: {
     fontSize: 12,
     textAlign: 'center',
-    marginTop: 6,
-    lineHeight: 18,
-    paddingHorizontal: 8,
+    marginTop: 4,
+    lineHeight: 16,
   },
   pinDisplayBox: {
     width: '100%',
     borderWidth: 2,
     borderRadius: 12,
-    paddingVertical: 16,
-    marginVertical: 18,
+    paddingVertical: 14,
+    marginVertical: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
   pinDisplayText: {
-    fontSize: 38,
+    fontSize: 34,
     fontWeight: '900',
-    letterSpacing: 10,
+    letterSpacing: 8,
   },
   copyRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 6,
   },
   copyText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '800',
     letterSpacing: 0.8,
-    marginLeft: 5,
-  },
-  pinWarningBox: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    borderRadius: 8,
-    padding: 10,
-    width: '100%',
-  },
-  pinWarning: {
-    fontSize: 11,
-    lineHeight: 16,
-    flex: 1,
+    marginLeft: 4,
   },
 });
-
