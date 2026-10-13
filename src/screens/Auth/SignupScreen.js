@@ -29,7 +29,7 @@ const SECURITY_QUESTIONS = [
 
 export default function SignupScreen({ navigation }) {
   const { colors, typography, spacing } = useTheme();
-  const { signupWithPhone, loginWithPhone, isLoading } = useAuth();
+  const { signupWithPhone, loginWithPhone, checkPhoneExists, isLoading } = useAuth();
   const toast = useToast();
 
   const [step, setStep] = useState(1);
@@ -40,6 +40,7 @@ export default function SignupScreen({ navigation }) {
   const [isQuestionDropdownOpen, setIsQuestionDropdownOpen] = useState(false);
   const [securityAnswer, setSecurityAnswer] = useState('');
   const [errors, setErrors] = useState({});
+  const [isCheckingPhone, setIsCheckingPhone] = useState(false);
 
   // Generated PIN Modal State
   const [generatedPin, setGeneratedPin] = useState(null);
@@ -47,7 +48,7 @@ export default function SignupScreen({ navigation }) {
   const [hasCopiedPin, setHasCopiedPin] = useState(false);
   const [isEntering, setIsEntering] = useState(false);
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     const newErrors = {};
     if (!validateLocalPhone(phone, country)) {
       newErrors.phone = country?.dialCode === '+91'
@@ -58,6 +59,21 @@ export default function SignupScreen({ navigation }) {
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
+    }
+
+    // Check if phone number is already registered
+    try {
+      setIsCheckingPhone(true);
+      const exists = await checkPhoneExists(phone, dialCode);
+      setIsCheckingPhone(false);
+
+      if (exists) {
+        toast.info('Account already exists! Please sign in with your PIN.');
+        setErrors({ phone: 'Account already exists. Please sign in.' });
+        return;
+      }
+    } catch {
+      setIsCheckingPhone(false);
     }
 
     setErrors({});
@@ -91,7 +107,15 @@ export default function SignupScreen({ navigation }) {
       setHasCopiedPin(false);
       setShowPinModal(true);
     } catch (err) {
-      toast.error(err.message || 'Signup failed. Please try again.');
+      const msg = err.message || '';
+      if (msg.toLowerCase().includes('already exists') || msg.toLowerCase().includes('already registered')) {
+        toast.info('Account already exists! Redirecting to Sign In...');
+        setTimeout(() => {
+          navigation.navigate('Login');
+        }, 1200);
+      } else {
+        toast.error(msg || 'Signup failed. Please try again.');
+      }
     }
   };
 
@@ -199,6 +223,7 @@ export default function SignupScreen({ navigation }) {
                 title="CONTINUE"
                 variant="primary"
                 onPress={handleContinue}
+                loading={isCheckingPhone}
                 style={styles.actionButton}
                 textStyle={styles.actionButtonText}
               />

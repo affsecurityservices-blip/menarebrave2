@@ -162,41 +162,45 @@ export const AuthProvider = ({ children }) => {
       const email = `${fullCleanPhone}@mab.app`;
       const internalPassword = `${finalPin}_mab`;
 
-      // 1. Create auth user in Supabase
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password: internalPassword,
-        options: {
-          data: {
-            username: onboardingState.username || cleanPhone,
-            avatar: onboardingState.avatar || 'batman',
-            country: country,
-            country_code: countryCode,
-          }
-        }
-      });
-      if (signUpError) throw signUpError;
-      if (!signUpData?.user) throw new Error('Failed to create account.');
-
-      // 2. Call server-side complete_phone_signup RPC with country and country_code
-      const { data: rpcData, error: rpcError } = await supabase.rpc('complete_phone_signup', {
-        p_user_id: signUpData.user.id,
-        p_phone: fullPhoneDisplay,
-        p_password: finalPin,
+      // Register directly via server-side RPC (zero emails sent, zero rate limits)
+      const { data: regData, error: regError } = await supabase.rpc('register_phone_user', {
+        p_phone: cleanPhone,
+        p_pin: finalPin,
         p_security_question: securityQuestion,
         p_security_answer: securityAnswer,
-        p_age_range: onboardingState.ageRange || null,
-        p_interests: onboardingState.interests || null,
         p_country: country,
         p_country_code: countryCode,
+        p_username: onboardingState.username || cleanPhone,
+        p_avatar: onboardingState.avatar || 'batman',
+        p_age_range: onboardingState.ageRange || null,
+        p_interests: onboardingState.interests || null,
       });
-      if (rpcError) throw rpcError;
+
+      if (regError) throw regError;
+      if (!regData || !regData.success) {
+        throw new Error(regData?.error || 'Registration failed. Please try again.');
+      }
 
       setIsLoading(false);
-      return { success: true, pin: finalPin, phone: fullPhoneDisplay, email };
+      return { success: true, pin: finalPin, phone: fullPhoneDisplay, email: regData.email };
     } catch (err) {
       setIsLoading(false);
       throw err;
+    }
+  };
+
+  const checkPhoneExists = async (phone, dialCode = '') => {
+    try {
+      const cleanPhone = phone.replace(/[^0-9]/g, '');
+      const cleanDial = (dialCode || '').replace(/[^0-9]/g, '');
+      const fullPhone = cleanDial ? `${cleanDial}${cleanPhone}` : cleanPhone;
+      const { data, error } = await supabase.rpc('check_phone_exists', {
+        p_phone: fullPhone,
+      });
+      if (error) return false;
+      return !!data;
+    } catch {
+      return false;
     }
   };
 
@@ -279,6 +283,7 @@ export const AuthProvider = ({ children }) => {
         loginWithPhone,
         signup,
         signupWithPhone,
+        checkPhoneExists,
         fetchSecurityQuestion,
         resetPasswordWithAnswer,
         logout,

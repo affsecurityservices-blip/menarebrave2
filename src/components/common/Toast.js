@@ -59,7 +59,7 @@ export default function Toast({ message, type = 'info', duration = 3000, onHide 
       Animated.timing(slideAnim, {
         toValue: 0,
         duration: 220,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }),
       Animated.timing(progressAnim, {
         toValue: 0,
@@ -88,7 +88,7 @@ export default function Toast({ message, type = 'info', duration = 3000, onHide 
       toValue: 1,
       tension: 60,
       friction: 10,
-      useNativeDriver: true,
+      useNativeDriver: Platform.OS !== 'web',
     }).start();
 
     // 3. Animate Progress Bar from 1 to 0
