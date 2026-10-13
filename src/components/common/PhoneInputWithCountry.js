@@ -102,7 +102,7 @@ export default function PhoneInputWithCountry({
 
   return (
     <View style={[styles.container, { marginBottom: spacing.md }, containerStyle]}>
-      {/* Label and Live Region Badge Header */}
+      {/* Header Row: Label on Left, Country Badge on Right */}
       <View style={styles.headerRow}>
         {label && (
           <Text
@@ -119,56 +119,41 @@ export default function PhoneInputWithCountry({
           </Text>
         )}
 
-        {isDetecting && (
-          <Text style={[styles.detectingText, { color: colors.accent }]}>
-            DETECTING REGION...
-          </Text>
-        )}
-      </View>
-
-      {/* Prominent Live Country Banner Directly Above Input */}
-      <View
-        style={[
-          styles.regionBanner,
-          {
-            backgroundColor: isRecognized ? colors.yellowMuted : 'rgba(255, 255, 255, 0.05)',
-            borderColor: isRecognized ? colors.accent : colors.border,
-          },
-        ]}
-      >
-        <View style={styles.regionBannerContent}>
-          <Text style={styles.bannerFlag}>
-            {displayCountry ? displayCountry.flag : '🌐'}
-          </Text>
-          <View style={styles.bannerTextGroup}>
-            <Text
-              style={[
-                styles.regionTag,
-                {
-                  color: isRecognized ? colors.accent : colors.textSecondary,
-                  fontFamily: typography.fontFamily.header,
-                },
-              ]}
-              numberOfLines={1}
-            >
-              SHELTER REGION:{' '}
-              <Text style={{ color: colors.textPrimary, fontWeight: '800' }}>
-                {displayCountry ? displayCountry.name.toUpperCase() : 'UNKNOWN REGION'}
-              </Text>{' '}
-              ({dialCode || '+?'})
-            </Text>
-          </View>
-        </View>
-
         <TouchableOpacity
           onPress={() => setIsModalOpen(true)}
-          style={[styles.changeRegionBtn, { borderColor: colors.accent }]}
+          style={[
+            styles.countryHeaderBadge,
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
+            },
+          ]}
           activeOpacity={0.7}
         >
-          <Text style={[styles.changeRegionBtnText, { color: colors.accent }]}>
-            CHANGE
+          <Text style={[styles.countryHeaderPrefix, { color: colors.textSecondary, fontFamily: typography.fontFamily.body }]}>
+            COUNTRY:{' '}
           </Text>
-          <MaterialCommunityIcons name="chevron-down" size={14} color={colors.accent} />
+          <Text style={styles.countryHeaderFlag}>
+            {displayCountry ? displayCountry.flag : '🌐'}
+          </Text>
+          <Text
+            style={[
+              styles.countryHeaderName,
+              {
+                color: colors.accent,
+                fontFamily: typography.fontFamily.header,
+              },
+            ]}
+            numberOfLines={1}
+          >
+            {displayCountry ? displayCountry.name.toUpperCase() : 'UNKNOWN'} ({dialCode || '+?'})
+          </Text>
+          <MaterialCommunityIcons
+            name="chevron-down"
+            size={14}
+            color={colors.accent}
+            style={{ marginLeft: 3 }}
+          />
         </TouchableOpacity>
       </View>
 
@@ -492,52 +477,27 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.5,
   },
-  detectingText: {
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-  },
-  regionBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderWidth: 1.5,
-    borderRadius: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    marginBottom: 8,
-  },
-  regionBannerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    marginRight: 8,
-  },
-  bannerFlag: {
-    fontSize: 18,
-    marginRight: 8,
-  },
-  bannerTextGroup: {
-    flex: 1,
-  },
-  regionTag: {
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-  },
-  changeRegionBtn: {
+  countryHeaderBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
     borderRadius: 4,
     paddingVertical: 3,
-    paddingHorizontal: 6,
+    paddingHorizontal: 8,
   },
-  changeRegionBtnText: {
+  countryHeaderPrefix: {
     fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  countryHeaderFlag: {
+    fontSize: 13,
+    marginRight: 4,
+  },
+  countryHeaderName: {
+    fontSize: 11,
     fontWeight: '800',
     letterSpacing: 0.5,
-    marginRight: 2,
   },
   inputGroup: {
     flexDirection: 'row',

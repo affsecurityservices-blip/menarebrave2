@@ -23,6 +23,7 @@ export default function SignupScreen({ navigation }) {
   const { signupWithPhone, isLoading } = useAuth();
   const toast = useToast();
 
+  const [step, setStep] = useState(1); // 1: Phone number, 2: Security recovery challenge
   const [phone, setPhone] = useState('');
   const [dialCode, setDialCode] = useState('+91');
   const [country, setCountry] = useState(DEFAULT_COUNTRY);
@@ -35,14 +36,28 @@ export default function SignupScreen({ navigation }) {
   const [generatedPin, setGeneratedPin] = useState(null);
   const [showPinModal, setShowPinModal] = useState(false);
 
-  const handleSignup = async () => {
+  const handleContinue = () => {
     const newErrors = {};
     if (!validateLocalPhone(phone, country)) {
       newErrors.phone = country?.dialCode === '+91'
         ? 'Enter a valid 10-digit mobile number'
         : 'Enter a valid mobile number for selected country';
     }
-    if (!securityAnswer.trim()) newErrors.securityAnswer = 'Answer is required for recovery';
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setErrors({});
+    setStep(2);
+  };
+
+  const handleSignup = async () => {
+    const newErrors = {};
+    if (!securityAnswer.trim()) {
+      newErrors.securityAnswer = 'Answer is required for recovery';
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -86,7 +101,7 @@ export default function SignupScreen({ navigation }) {
             marginBottom: spacing.xs,
             textAlign: 'center',
           }]}>
-            CREATE SHELTER KEYS
+            {step === 1 ? 'CREATE SHELTER KEYS' : 'RECOVERY CHALLENGE'}
           </Text>
           <Text style={{
             color: colors.textSecondary,
@@ -94,86 +109,120 @@ export default function SignupScreen({ navigation }) {
             fontSize: typography.sizes.sm,
             marginBottom: spacing.lg,
             textAlign: 'center',
+            lineHeight: 20,
           }}>
-            Enter your mobile number. A private 5-digit key will be generated for you.
+            {step === 1
+              ? 'Enter your mobile number. A private 5-digit key will be generated for you.'
+              : 'Set a secret question so you can recover your 5-digit key if ever forgotten.'}
           </Text>
 
-          <PhoneInputWithCountry
-            label="MOBILE NUMBER"
-            phone={phone}
-            onChangePhone={setPhone}
-            dialCode={dialCode}
-            onChangeDialCode={setDialCode}
-            country={country}
-            onChangeCountry={setCountry}
-            error={errors.phone}
-          />
+          {step === 1 ? (
+            <>
+              {/* Step 1: Only Phone Number with Country Code & Live Region Banner */}
+              <PhoneInputWithCountry
+                label="MOBILE NUMBER"
+                phone={phone}
+                onChangePhone={setPhone}
+                dialCode={dialCode}
+                onChangeDialCode={setDialCode}
+                country={country}
+                onChangeCountry={setCountry}
+                error={errors.phone}
+              />
 
-          {/* Security Question Selector */}
-          <Text style={[styles.inputLabel, { color: colors.textSecondary, fontFamily: typography.fontFamily.body, fontSize: typography.sizes.xs }]}>
-            SECURITY RECOVERY QUESTION
-          </Text>
-          <TouchableOpacity
-            style={[styles.dropdownButton, {
-              backgroundColor: colors.surface,
-              borderColor: colors.border,
-              padding: spacing.md,
-              borderRadius: spacing.borderRadius.xs,
-              marginBottom: isQuestionDropdownOpen ? spacing.xs : spacing.md,
-            }]}
-            onPress={() => setIsQuestionDropdownOpen(!isQuestionDropdownOpen)}
-            activeOpacity={0.8}
-          >
-            <Text style={{ color: colors.textPrimary, fontFamily: typography.fontFamily.body, fontSize: 13, flex: 1 }}>
-              {selectedQuestion}
-            </Text>
-            <MaterialCommunityIcons
-              name={isQuestionDropdownOpen ? 'chevron-up' : 'chevron-down'}
-              size={20}
-              color={colors.accent}
-            />
-          </TouchableOpacity>
+              <Button
+                title="CONTINUE"
+                variant="primary"
+                onPress={handleContinue}
+                style={{ marginTop: spacing.md }}
+              />
+            </>
+          ) : (
+            <>
+              {/* Step 2: Selected Mobile Confirmation Badge */}
+              <View style={[styles.phoneBadgeBox, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <Text style={{ color: colors.textSecondary, fontSize: 12 }}>Registered Key:</Text>
+                <Text style={{ color: colors.accent, fontWeight: '700', fontSize: 13, marginLeft: 8 }}>
+                  {country?.flag} {dialCode} {phone}
+                </Text>
+              </View>
 
-          {isQuestionDropdownOpen && (
-            <View style={[styles.dropdownList, { backgroundColor: colors.surface, borderColor: colors.border, marginBottom: spacing.md }]}>
-              {SECURITY_QUESTIONS.map((q, idx) => (
-                <TouchableOpacity
-                  key={idx}
-                  style={[styles.dropdownItem, {
-                    backgroundColor: selectedQuestion === q ? colors.yellowMuted : 'transparent',
-                    borderBottomColor: colors.border,
-                    borderBottomWidth: idx < SECURITY_QUESTIONS.length - 1 ? 1 : 0,
-                    padding: spacing.sm,
-                  }]}
-                  onPress={() => {
-                    setSelectedQuestion(q);
-                    setIsQuestionDropdownOpen(false);
-                  }}
-                >
-                  <Text style={{ color: selectedQuestion === q ? colors.accent : colors.textPrimary, fontSize: 12 }}>
-                    {q}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+              {/* Security Question Selector */}
+              <Text style={[styles.inputLabel, { color: colors.textSecondary, fontFamily: typography.fontFamily.body, fontSize: typography.sizes.xs }]}>
+                SECURITY RECOVERY QUESTION
+              </Text>
+              <TouchableOpacity
+                style={[styles.dropdownButton, {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  padding: spacing.md,
+                  borderRadius: spacing.borderRadius.xs,
+                  marginBottom: isQuestionDropdownOpen ? spacing.xs : spacing.md,
+                }]}
+                onPress={() => setIsQuestionDropdownOpen(!isQuestionDropdownOpen)}
+                activeOpacity={0.8}
+              >
+                <Text style={{ color: colors.textPrimary, fontFamily: typography.fontFamily.body, fontSize: 13, flex: 1 }}>
+                  {selectedQuestion}
+                </Text>
+                <MaterialCommunityIcons
+                  name={isQuestionDropdownOpen ? 'chevron-up' : 'chevron-down'}
+                  size={20}
+                  color={colors.accent}
+                />
+              </TouchableOpacity>
+
+              {isQuestionDropdownOpen && (
+                <View style={[styles.dropdownList, { backgroundColor: colors.surface, borderColor: colors.border, marginBottom: spacing.md }]}>
+                  {SECURITY_QUESTIONS.map((q, idx) => (
+                    <TouchableOpacity
+                      key={idx}
+                      style={[styles.dropdownItem, {
+                        backgroundColor: selectedQuestion === q ? colors.yellowMuted : 'transparent',
+                        borderBottomColor: colors.border,
+                        borderBottomWidth: idx < SECURITY_QUESTIONS.length - 1 ? 1 : 0,
+                        padding: spacing.sm,
+                      }]}
+                      onPress={() => {
+                        setSelectedQuestion(q);
+                        setIsQuestionDropdownOpen(false);
+                      }}
+                    >
+                      <Text style={{ color: selectedQuestion === q ? colors.accent : colors.textPrimary, fontSize: 12 }}>
+                        {q}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+
+              <InputField
+                label="SECURITY ANSWER (FOR FORGOT PASSWORD)"
+                placeholder="Your secret answer..."
+                value={securityAnswer}
+                onChangeText={setSecurityAnswer}
+                error={errors.securityAnswer}
+                autoCapitalize="none"
+              />
+
+              <Button
+                title="GENERATE 5-DIGIT KEY & SIGN UP"
+                variant="primary"
+                onPress={handleSignup}
+                loading={isLoading}
+                style={{ marginTop: spacing.md }}
+              />
+
+              <TouchableOpacity
+                onPress={() => setStep(1)}
+                style={styles.backPhoneBtn}
+              >
+                <Text style={{ color: colors.textSecondary, fontSize: 12, textAlign: 'center' }}>
+                  ← Change mobile number
+                </Text>
+              </TouchableOpacity>
+            </>
           )}
-
-          <InputField
-            label="SECURITY ANSWER (FOR FORGOT PASSWORD)"
-            placeholder="Your secret answer..."
-            value={securityAnswer}
-            onChangeText={setSecurityAnswer}
-            error={errors.securityAnswer}
-            autoCapitalize="none"
-          />
-
-          <Button
-            title="GENERATE 5-DIGIT KEY & SIGN UP"
-            variant="primary"
-            onPress={handleSignup}
-            loading={isLoading}
-            style={{ marginTop: spacing.md }}
-          />
         </View>
 
         <TouchableOpacity
@@ -311,5 +360,18 @@ const styles = StyleSheet.create({
     fontSize: 11,
     textAlign: 'center',
     lineHeight: 16,
+  },
+  phoneBadgeBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderRadius: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginBottom: 16,
+  },
+  backPhoneBtn: {
+    alignSelf: 'center',
+    paddingVertical: 14,
   },
 });
