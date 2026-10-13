@@ -13,9 +13,9 @@ export default function MyPostsScreen({ navigation }) {
   const { user } = useAuth();
   const toast = useToast();
 
-  // Filter posts created by the user (matches author = 'Anonymous Member' or user's username)
+  // Filter posts created by the user (matches author_id = user.id or user's username)
   const myPosts = posts.filter(
-    (post) => post.author === 'Anonymous Member' || post.author === user?.username
+    (post) => (user?.id && post.author_id === user.id) || (user?.username && post.author === user.username)
   );
 
   const renderPost = ({ item }) => (

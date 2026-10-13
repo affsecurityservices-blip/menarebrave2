@@ -1,5 +1,13 @@
 import React, { useState, useLayoutEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  Modal,
+  Platform,
+} from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { useUser } from '../../context/UserContext';
@@ -9,19 +17,28 @@ import Avatar from '../../components/common/Avatar';
 import StreakBadge from '../../components/moodcheckin/StreakBadge';
 import PostCard from '../../components/post/PostCard';
 import EmptyState from '../../components/common/EmptyState';
+import InputField from '../../components/common/InputField';
+import Button from '../../components/common/Button';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function ProfileScreen({ navigation }) {
   const { colors, typography, spacing } = useTheme();
-  const { user } = useAuth();
+  const { user, toggleAnonymousMode, setProfileIdentity } = useAuth();
   const { streakCount, posts, toggleLikePost, toggleSavePost } = useUser();
   const toast = useToast();
   const insets = useSafeAreaInsets();
 
   const [activeTab, setActiveTab] = useState('posts'); // 'posts' or 'about'
 
-  // Hide the default navigation stack header to render our premium custom translucent header
+  // Modal for first-time public profile configuration
+  const [showSetupModal, setShowSetupModal] = useState(false);
+  const [newFullName, setNewFullName] = useState('');
+  const [newUsername, setNewUsername] = useState('');
+  const [isSavingIdentity, setIsSavingIdentity] = useState(false);
+  const [setupErrors, setSetupErrors] = useState({});
+
+  // Hide the default navigation stack header to render custom translucent header
   useLayoutEffect(() => {
     navigation.setOptions({
       headerShown: false,
@@ -30,12 +47,67 @@ export default function ProfileScreen({ navigation }) {
 
   // Filter posts written by the logged-in user
   const userPosts = posts.filter(
-    (p) => p.author === (user?.username || 'Anonymous Member')
+    (p) => (user?.id && p.author_id === user.id) || (user?.username && p.author === user.username)
   );
+
+  const isUserAnonymous = user?.isAnonymous ?? true;
+
+  const handleToggleAnonymity = () => {
+    if (isUserAnonymous) {
+      // Switching to Public: Check if name and custom username are set
+      const hasRealName = !!(user?.fullName && user.fullName.trim());
+      const hasCustomUsername = !!(user?.username && user.username.trim() && user.username !== 'Anonymous Member');
+
+      if (!hasRealName || !hasCustomUsername) {
+        setNewFullName(user?.fullName || '');
+        setNewUsername(user?.username && user.username !== 'Anonymous Member' ? user.username : '');
+        setSetupErrors({});
+        setShowSetupModal(true);
+      } else {
+        toggleAnonymousMode(false);
+        toast.success(`Switched to Public Brotherhood profile (u/${user.username})`);
+      }
+    } else {
+      // Switching to Anonymous
+      toggleAnonymousMode(true);
+      toast.info('Ghost Shield enabled. All upcoming interactions are anonymous.');
+    }
+  };
+
+  const handleSavePublicProfile = async () => {
+    const errs = {};
+    if (!newFullName.trim()) {
+      errs.fullName = 'Full Name is required for public profile';
+    }
+    if (!newUsername.trim()) {
+      errs.username = 'Public Username is required';
+    } else if (newUsername.trim().length < 3) {
+      errs.username = 'Username must be at least 3 characters';
+    }
+
+    if (Object.keys(errs).length > 0) {
+      setSetupErrors(errs);
+      return;
+    }
+
+    try {
+      setSetupErrors({});
+      setIsSavingIdentity(true);
+
+      await setProfileIdentity(newFullName.trim(), newUsername.trim(), false);
+
+      setIsSavingIdentity(false);
+      setShowSetupModal(false);
+      toast.success(`Identity updated. You are now public as u/${newUsername.trim()}!`);
+    } catch (err) {
+      setIsSavingIdentity(false);
+      toast.error(err.message || 'Failed to update public profile');
+    }
+  };
 
   const renderHeader = () => (
     <View style={{ backgroundColor: colors.background }}>
-      {/* Cover / Cover Banner (Reddit-style Gradient Cover) */}
+      {/* Cover Banner */}
       <LinearGradient
         colors={[colors.surfaceLight, colors.background]}
         start={{ x: 0, y: 0 }}
@@ -66,8 +138,55 @@ export default function ProfileScreen({ navigation }) {
           </View>
           
           <Text style={[styles.handleText, { color: colors.textSecondary, fontFamily: typography.fontFamily.body, fontSize: 12, marginTop: 2 }]}>
-            u/{(user?.username || 'anonymous').toLowerCase().replace(/[^a-z0-9]/g, '')} • Shield Active
+            u/{(user?.username || 'anonymous').toLowerCase().replace(/[^a-z0-9]/g, '')} • {isUserAnonymous ? 'Ghost Shield Active' : 'Public Profile Active'}
           </Text>
+        </View>
+
+        {/* Anonymity Switch Tactical Card */}
+        <View style={[styles.anonymityCard, {
+          backgroundColor: isUserAnonymous ? 'rgba(255, 209, 0, 0.05)' : 'rgba(42, 157, 143, 0.08)',
+          borderColor: isUserAnonymous ? 'rgba(255, 209, 0, 0.28)' : 'rgba(42, 157, 143, 0.35)',
+        }]}>
+          <View style={styles.anonymityLeft}>
+            <View style={[styles.anonymityIconBadge, {
+              backgroundColor: isUserAnonymous ? 'rgba(255, 209, 0, 0.12)' : 'rgba(42, 157, 143, 0.18)',
+            }]}>
+              <MaterialCommunityIcons
+                name={isUserAnonymous ? 'incognito' : 'account-check'}
+                size={22}
+                color={isUserAnonymous ? colors.accent : '#2A9D8F'}
+              />
+            </View>
+            <View style={{ flex: 1, marginLeft: 10 }}>
+              <Text style={[styles.anonymityTitle, {
+                color: isUserAnonymous ? colors.accent : '#2A9D8F',
+                fontFamily: typography.fontFamily.header,
+              }]}>
+                {isUserAnonymous ? 'GHOST ANONYMOUS' : 'PUBLIC BROTHERHOOD'}
+              </Text>
+              <Text style={[styles.anonymitySub, { color: colors.textSecondary, fontFamily: typography.fontFamily.body }]}>
+                {isUserAnonymous
+                  ? 'Mask active • All feeds & interactions are anonymous'
+                  : `Posting openly as ${user?.fullName ? `${user.fullName} (u/${user.username})` : `u/${user.username}`}`}
+              </Text>
+            </View>
+          </View>
+
+          <TouchableOpacity
+            style={[styles.switchModeBtn, {
+              backgroundColor: isUserAnonymous ? colors.accent : colors.surface,
+              borderColor: isUserAnonymous ? colors.accent : colors.border,
+            }]}
+            onPress={handleToggleAnonymity}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.switchModeBtnText, {
+              color: isUserAnonymous ? '#000000' : colors.textPrimary,
+              fontFamily: typography.fontFamily.header,
+            }]}>
+              {isUserAnonymous ? 'GO PUBLIC' : 'GO GHOST'}
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* Stats Grid */}
@@ -150,8 +269,13 @@ export default function ProfileScreen({ navigation }) {
           </Text>
           <Text style={[styles.aboutText, { color: colors.textPrimary, fontFamily: typography.fontFamily.body, fontSize: 13, lineHeight: 22 }]}>
             Username: <Text style={{ fontWeight: '700' }}>u/{user?.username || 'Anonymous Member'}</Text>{"\n"}
+            {user?.fullName ? (
+              <>Full Name: <Text style={{ fontWeight: '700' }}>{user.fullName}</Text>{"\n"}</>
+            ) : null}
             Shelter Region: <Text style={{ color: colors.accent, fontWeight: '700' }}>{user?.country || 'India'} ({user?.countryCode || '+91'})</Text>{"\n"}
-            Privacy Shield: <Text style={{ color: colors.success, fontWeight: '700' }}>100% Encrypted & Anonymous</Text>
+            Privacy Shield: <Text style={{ color: isUserAnonymous ? colors.accent : colors.success, fontWeight: '700' }}>
+              {isUserAnonymous ? '100% Encrypted & Anonymous (Ghost Mode)' : 'Public Brotherhood Profile'}
+            </Text>
           </Text>
         </View>
 
@@ -164,7 +288,7 @@ export default function ProfileScreen({ navigation }) {
             </Text>
           </View>
           <Text style={[styles.aboutText, { color: colors.textSecondary, fontFamily: typography.fontFamily.body, fontSize: 12, lineHeight: 18 }]}>
-            Your identity is completely protected under the Sanctity Shield. Other circle members can only see your mask avatar, custom pseudonymous name, post logs, and streak. Personally identifiable details, email logs, and device configurations are fully encrypted.
+            Your identity is completely protected under the Sanctity Shield. Other circle members can only see your mask avatar, custom pseudonymous name, post logs, and streak. Personally identifiable details, phone numbers, and credentials are completely isolated and encrypted.
           </Text>
         </View>
       </View>
@@ -205,6 +329,68 @@ export default function ProfileScreen({ navigation }) {
         ListEmptyComponent={renderEmptyOrAbout}
         contentContainerStyle={{ paddingBottom: spacing.xl }}
       />
+
+      {/* Setup Public Identity Modal */}
+      <Modal
+        visible={showSetupModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowSetupModal(false)}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={[styles.modalCard, { backgroundColor: colors.surface, borderColor: 'rgba(255, 209, 0, 0.45)' }]}>
+            <View style={[styles.modalIconRing, { backgroundColor: 'rgba(255, 209, 0, 0.12)', borderColor: colors.accent }]}>
+              <MaterialCommunityIcons name="shield-account" size={32} color={colors.accent} />
+            </View>
+
+            <Text style={[styles.modalTitle, { color: colors.textPrimary, fontFamily: typography.fontFamily.header }]}>
+              ACTIVATE PUBLIC PROFILE
+            </Text>
+
+            <Text style={[styles.modalSubtitle, { color: colors.textSecondary, fontFamily: typography.fontFamily.body }]}>
+              Set your real name and public handle to reveal your brotherhood profile across feeds.
+            </Text>
+
+            <InputField
+              label="FULL NAME (REAL NAME)"
+              placeholder="e.g. Aashutosh Mishra"
+              value={newFullName}
+              onChangeText={setNewFullName}
+              error={setupErrors.fullName}
+              autoCapitalize="words"
+              containerStyle={{ width: '100%', marginBottom: 14 }}
+            />
+
+            <InputField
+              label="PUBLIC USERNAME"
+              placeholder="e.g. shadow_warrior"
+              value={newUsername}
+              onChangeText={(t) => setNewUsername(t.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+              error={setupErrors.username}
+              autoCapitalize="none"
+              containerStyle={{ width: '100%', marginBottom: 20 }}
+            />
+
+            <Button
+              title="CONFIRM & GO PUBLIC"
+              variant="primary"
+              onPress={handleSavePublicProfile}
+              loading={isSavingIdentity}
+              style={{ width: '100%', height: 48, borderRadius: 4 }}
+              textStyle={{ fontSize: 13, fontWeight: '800', letterSpacing: 1 }}
+            />
+
+            <TouchableOpacity
+              onPress={() => setShowSetupModal(false)}
+              style={{ marginTop: 14, padding: 8 }}
+            >
+              <Text style={{ color: colors.textSecondary, fontSize: 12, fontWeight: '700' }}>
+                STAY ANONYMOUS
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -276,6 +462,51 @@ const styles = StyleSheet.create({
   handleText: {
     fontWeight: '500',
   },
+  anonymityCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1.5,
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 14,
+  },
+  anonymityLeft: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  anonymityIconBadge: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  anonymityTitle: {
+    fontSize: 12,
+    fontWeight: '900',
+    letterSpacing: 0.8,
+  },
+  anonymitySub: {
+    fontSize: 11,
+    lineHeight: 15,
+    marginTop: 2,
+  },
+  switchModeBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 4,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  switchModeBtnText: {
+    fontSize: 11,
+    fontWeight: '900',
+    letterSpacing: 0.8,
+  },
   statsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -284,7 +515,7 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderBottomWidth: StyleSheet.hairlineWidth,
     paddingVertical: 12,
-    marginTop: 16,
+    marginTop: 14,
   },
   statBox: {
     flex: 1,
@@ -346,5 +577,43 @@ const styles = StyleSheet.create({
   },
   aboutText: {
     lineHeight: 18,
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.88)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 390,
+    borderWidth: 1.5,
+    borderRadius: 12,
+    padding: 22,
+    alignItems: 'center',
+  },
+  modalIconRing: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  modalTitle: {
+    fontSize: 17,
+    fontWeight: '900',
+    letterSpacing: 1,
+    textAlign: 'center',
+  },
+  modalSubtitle: {
+    fontSize: 12,
+    textAlign: 'center',
+    lineHeight: 17,
+    marginTop: 4,
+    marginBottom: 18,
+    paddingHorizontal: 8,
   },
 });

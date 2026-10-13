@@ -49,7 +49,7 @@ export default function PostDetailScreen({ route, navigation }) {
             .filter(r => r.comment_id === c.id)
             .map(r => ({
               id: r.id,
-              author: r.author_name,
+              author: r.is_anonymous ? 'Anonymous Member' : r.author_name,
               timestamp: 'Just now',
               content: r.content,
             }));
@@ -92,8 +92,9 @@ export default function PostDetailScreen({ route, navigation }) {
         const newReply = {
           comment_id: replyToComment.id,
           author_id: user.id,
-          author_name: user.isAnonymous ? 'Anonymous Member' : user.username,
-          content: commentText,
+          author_name: user.isAnonymous ? 'Anonymous Member' : (user.username || 'Brother'),
+          content: commentText.trim(),
+          is_anonymous: !!user.isAnonymous,
         };
         const { error } = await supabase.from('replies').insert([newReply]);
         if (error) throw error;
@@ -102,9 +103,9 @@ export default function PostDetailScreen({ route, navigation }) {
         const newComment = {
           post_id: postId,
           author_id: user.id,
-          author_name: user.isAnonymous ? 'Anonymous Member' : user.username,
-          content: commentText,
-          is_anonymous: user.isAnonymous,
+          author_name: user.isAnonymous ? 'Anonymous Member' : (user.username || 'Brother'),
+          content: commentText.trim(),
+          is_anonymous: !!user.isAnonymous,
         };
         const { error } = await supabase.from('comments').insert([newComment]);
         if (error) throw error;

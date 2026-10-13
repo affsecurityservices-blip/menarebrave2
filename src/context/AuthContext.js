@@ -31,12 +31,13 @@ export const AuthProvider = ({ children }) => {
           country: data.country || 'India',
           countryCode: data.country_code || '+91',
           username: data.username,
+          fullName: data.full_name || '',
           avatar: data.avatar,
           streakCount: data.streak_count,
           hasCheckedInToday: data.has_checked_in_today,
           hasCompletedResolveToday: data.has_completed_resolve_today,
           isPremium: false,
-          isAnonymous: onboardingState.anonymousMode,
+          isAnonymous: data.is_anonymous !== undefined ? !!data.is_anonymous : true,
         });
       } else {
         setUser({
@@ -291,14 +292,44 @@ export const AuthProvider = ({ children }) => {
     setOnboardingCompleted(true);
   };
 
-  const toggleAnonymousMode = () => {
-    setUser((prev) => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        isAnonymous: !prev.isAnonymous,
-      };
+  const toggleAnonymousMode = async (explicitVal) => {
+    if (!user) return;
+    const nextVal = typeof explicitVal === 'boolean' ? explicitVal : !user.isAnonymous;
+    setUser((prev) => (prev ? { ...prev, isAnonymous: nextVal } : null));
+
+    try {
+      await supabase.rpc('toggle_profile_anonymity', {
+        p_is_anonymous: nextVal,
+        p_user_id: user.id,
+      });
+    } catch (e) {
+      console.log('Error persisting anonymity toggle:', e);
+    }
+  };
+
+  const setProfileIdentity = async (fullName, username, isAnonymous = false) => {
+    if (!user) throw new Error('Not logged in');
+    const cleanUsername = (username || '').trim();
+    const cleanName = (fullName || '').trim();
+
+    const { data, error } = await supabase.rpc('set_profile_identity', {
+      p_full_name: cleanName,
+      p_username: cleanUsername,
+      p_is_anonymous: isAnonymous,
+      p_user_id: user.id,
     });
+
+    if (error) throw error;
+    if (!data?.success) throw new Error(data?.error || 'Failed to update profile');
+
+    setUser((prev) => (prev ? {
+      ...prev,
+      fullName: cleanName,
+      username: cleanUsername,
+      isAnonymous: isAnonymous,
+    } : null));
+
+    return data;
   };
 
   return (
@@ -322,6 +353,7 @@ export const AuthProvider = ({ children }) => {
         updateOnboarding,
         completeOnboarding,
         toggleAnonymousMode,
+        setProfileIdentity,
       }}
     >
       {children}

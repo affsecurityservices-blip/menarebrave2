@@ -7,6 +7,8 @@ import Button from '../../components/common/Button';
 import InputField from '../../components/common/InputField';
 import Avatar from '../../components/common/Avatar';
 
+import { supabase } from '../../services/supabaseClient';
+
 export default function EditProfileScreen({ navigation }) {
   const { colors, typography, spacing } = useTheme();
   const { user, setUser } = useAuth();
@@ -14,21 +16,40 @@ export default function EditProfileScreen({ navigation }) {
 
   const [username, setUsername] = useState(user?.username || '');
   const [selectedAvatar, setSelectedAvatar] = useState(user?.avatar || 'batman');
+  const [isSaving, setIsSaving] = useState(false);
 
   const avatarTypes = ['batman', 'knight', 'ninja', 'anonymous'];
 
-  const handleSave = () => {
-    if (!username.trim()) {
+  const handleSave = async () => {
+    const cleanUsername = username.trim();
+    if (!cleanUsername) {
       toast.warning('Alias cannot be empty.');
       return;
     }
-    setUser((prev) => ({
-      ...prev,
-      username,
-      avatar: selectedAvatar,
-    }));
-    toast.success('Mask customized successfully.');
-    navigation.goBack();
+    setIsSaving(true);
+    try {
+      if (user?.id) {
+        await supabase
+          .from('profiles')
+          .update({
+            username: cleanUsername,
+            avatar: selectedAvatar,
+          })
+          .eq('id', user.id);
+      }
+      setUser((prev) => (prev ? {
+        ...prev,
+        username: cleanUsername,
+        avatar: selectedAvatar,
+      } : null));
+      toast.success('Mask customized successfully.');
+      navigation.goBack();
+    } catch (e) {
+      console.log('Error updating profile mask:', e);
+      toast.error('Failed to update mask.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (

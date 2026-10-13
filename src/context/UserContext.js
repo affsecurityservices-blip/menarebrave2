@@ -56,6 +56,8 @@ export const UserProvider = ({ children }) => {
 
           return {
             id: post.id,
+            author_id: post.author_id,
+            is_anonymous: !!post.is_anonymous,
             author: post.is_anonymous ? 'Anonymous Member' : post.author_name,
             avatar: post.is_anonymous ? 'anonymous' : post.avatar,
             content: post.content,
@@ -131,14 +133,15 @@ export const UserProvider = ({ children }) => {
   const addPost = async (content, type, category, isAnonymous, authorName) => {
     if (!user) return;
     try {
+      const isAnon = isAnonymous !== undefined ? isAnonymous : (user.isAnonymous ?? true);
       const newPost = {
         author_id: user.id,
-        author_name: user.username || 'Knight',
-        avatar: user.avatar || 'batman',
+        author_name: isAnon ? 'Anonymous Brother' : (authorName || user.username || 'Brother'),
+        avatar: isAnon ? 'anonymous' : (user.avatar || 'batman'),
         content,
         type,
         category,
-        is_anonymous: isAnonymous,
+        is_anonymous: isAnon,
       };
 
       const { data, error } = await supabase
