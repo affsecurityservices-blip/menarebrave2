@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, Modal } from 'react-native';
+import { Image } from 'expo-image';
 import { useTheme } from '../../context/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 import { useToast } from '../../context/ToastContext';
@@ -16,6 +17,7 @@ export default function PostCard({ post, onLike, onSave, onCommentPress, onRepor
   const navigation = useNavigation();
   const toast = useToast();
   const [isReportModalVisible, setIsReportModalVisible] = useState(false);
+  const [isImageViewerVisible, setIsImageViewerVisible] = useState(false);
 
   const handleReportSubmit = async (reason, details) => {
     setIsReportModalVisible(false);
@@ -99,12 +101,33 @@ export default function PostCard({ post, onLike, onSave, onCommentPress, onRepor
           )}
         </View>
 
-        <Text style={[styles.content, {
-          color: colors.textPrimary,
-          fontFamily: typography.fontFamily.body,
-        }]}>
-          {post.content}
-        </Text>
+        {post.content ? (
+          <Text style={[styles.content, {
+            color: colors.textPrimary,
+            fontFamily: typography.fontFamily.body,
+          }]}>
+            {post.content}
+          </Text>
+        ) : null}
+
+        {/* Attached Tactical Post Image */}
+        {post.image_url ? (
+          <TouchableOpacity
+            style={styles.imageContainer}
+            onPress={() => setIsImageViewerVisible(true)}
+            activeOpacity={0.92}
+          >
+            <Image
+              source={{ uri: post.image_url }}
+              style={styles.postImage}
+              contentFit="cover"
+              transition={200}
+            />
+            <View style={styles.imageExpandBadge}>
+              <MaterialCommunityIcons name="arrow-expand" size={12} color="#FFF" />
+            </View>
+          </TouchableOpacity>
+        ) : null}
 
         {post.category && (
           <View style={styles.categoryContainer}>
@@ -125,6 +148,31 @@ export default function PostCard({ post, onLike, onSave, onCommentPress, onRepor
           onReport={() => setIsReportModalVisible(true)}
         />
       </TouchableOpacity>
+
+      {/* Fullscreen Image Viewer Modal */}
+      {post.image_url && (
+        <Modal
+          visible={isImageViewerVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setIsImageViewerVisible(false)}
+        >
+          <View style={styles.fullscreenModalBackdrop}>
+            <TouchableOpacity
+              style={styles.fullscreenCloseBtn}
+              onPress={() => setIsImageViewerVisible(false)}
+              activeOpacity={0.8}
+            >
+              <MaterialCommunityIcons name="close" size={24} color="#FFF" />
+            </TouchableOpacity>
+            <Image
+              source={{ uri: post.image_url }}
+              style={styles.fullscreenImage}
+              contentFit="contain"
+            />
+          </View>
+        </Modal>
+      )}
 
       {/* Report Modal System */}
       <ReportModal
@@ -231,5 +279,53 @@ const styles = StyleSheet.create({
   categoryText: {
     fontSize: 10.5,
     fontWeight: '600',
+  },
+  imageContainer: {
+    position: 'relative',
+    width: '100%',
+    borderRadius: 10,
+    overflow: 'hidden',
+    marginVertical: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(0, 0, 0, 0.25)',
+  },
+  postImage: {
+    width: '100%',
+    height: 220,
+    borderRadius: 9,
+  },
+  imageExpandBadge: {
+    position: 'absolute',
+    bottom: 8,
+    right: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    borderRadius: 6,
+    padding: 5,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  fullscreenModalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+  },
+  fullscreenCloseBtn: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 50 : 25,
+    right: 20,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
+  },
+  fullscreenImage: {
+    width: '100%',
+    height: '85%',
   },
 });

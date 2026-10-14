@@ -1,5 +1,7 @@
 export const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://sjayvueparmwaokxorbd.supabase.co';
 export const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_V8oYJ2iXSfmO0bEWWbL01A_3DfOcM29';
+export const IMGBB_API_KEY = process.env.EXPO_PUBLIC_IMGBB_API_KEY || 'b05bea423d1022e784db4df1df5e211d';
+export const IMGBB_UPLOAD_URL = 'https://api.imgbb.com/1/upload';
 
 export const COMMUNITIES = [
   {

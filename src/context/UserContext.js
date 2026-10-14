@@ -61,6 +61,7 @@ export const UserProvider = ({ children }) => {
             author: post.is_anonymous ? 'Anonymous Member' : post.author_name,
             avatar: post.is_anonymous ? 'anonymous' : post.avatar,
             content: post.content,
+            image_url: post.image_url || null,
             type: post.type,
             commentsCount: post.comments_count || 0,
             likesCount: post.likes_count || 0,
@@ -130,7 +131,7 @@ export const UserProvider = ({ children }) => {
     }
   }, [user?.id]);
 
-  const addPost = async (content, type, category, isAnonymous, authorName) => {
+  const addPost = async (content, type, category, isAnonymous, authorName, imageUrl = null) => {
     if (!user) return;
     try {
       const isAnon = isAnonymous !== undefined ? isAnonymous : (user.isAnonymous ?? true);
@@ -139,6 +140,7 @@ export const UserProvider = ({ children }) => {
         author_name: isAnon ? 'Anonymous Brother' : (authorName || user.username || 'Brother'),
         avatar: isAnon ? 'anonymous' : (user.avatar || 'batman'),
         content,
+        image_url: imageUrl || null,
         type,
         category,
         is_anonymous: isAnon,
@@ -152,8 +154,10 @@ export const UserProvider = ({ children }) => {
 
       if (error) throw error;
       await fetchPosts();
+      return { success: true, data };
     } catch (e) {
       console.log('Error adding post:', e);
+      throw e;
     }
   };
 
