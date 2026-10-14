@@ -29,6 +29,8 @@ export default function ForgotPasswordScreen({ navigation }) {
   const [dialCode, setDialCode] = useState('+91');
   const [country, setCountry] = useState(DEFAULT_COUNTRY);
   const [securityQuestion, setSecurityQuestion] = useState('');
+  const [securityQuestion2, setSecurityQuestion2] = useState('');
+  const [activeQuestionTab, setActiveQuestionTab] = useState(1);
   const [answer, setAnswer] = useState('');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -53,8 +55,10 @@ export default function ForgotPasswordScreen({ navigation }) {
     try {
       const res = await fetchSecurityQuestion(phone, dialCode);
       setLoading(false);
-      if (res?.success && res?.question) {
-        setSecurityQuestion(res.question);
+      if (res?.success && (res?.question || res?.question_2)) {
+        setSecurityQuestion(res.question || '');
+        setSecurityQuestion2(res.question_2 || '');
+        setActiveQuestionTab(res.question ? 1 : 2);
         setStep(2);
       } else {
         toast.error(res?.error || 'No account found for this mobile number.');
@@ -198,22 +202,99 @@ export default function ForgotPasswordScreen({ navigation }) {
             </>
           ) : (
             <>
+              {/* Dual Question Switcher if backup exists */}
+              {securityQuestion && securityQuestion2 ? (
+                <View style={{ marginBottom: 14 }}>
+                  <Text style={{
+                    color: colors.textSecondary,
+                    fontSize: 11,
+                    fontWeight: '700',
+                    letterSpacing: 0.5,
+                    marginBottom: 8,
+                  }}>
+                    CHOOSE QUESTION TO ANSWER (EXTRA RECOVERY CHANCE)
+                  </Text>
+                  <View style={{ flexDirection: 'row', gap: 8 }}>
+                    <TouchableOpacity
+                      style={{
+                        flex: 1,
+                        paddingVertical: 9,
+                        paddingHorizontal: 8,
+                        borderRadius: 8,
+                        borderWidth: 1.5,
+                        borderColor: activeQuestionTab === 1 ? colors.accent : 'rgba(255, 255, 255, 0.12)',
+                        backgroundColor: activeQuestionTab === 1 ? 'rgba(255, 209, 0, 0.14)' : 'rgba(255, 255, 255, 0.03)',
+                        alignItems: 'center',
+                      }}
+                      onPress={() => {
+                        setActiveQuestionTab(1);
+                        setAnswer('');
+                        setErrors({});
+                      }}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={{
+                        color: activeQuestionTab === 1 ? colors.accent : colors.textSecondary,
+                        fontSize: 12,
+                        fontWeight: activeQuestionTab === 1 ? '800' : '600',
+                      }}>
+                        Question #1
+                      </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={{
+                        flex: 1,
+                        paddingVertical: 9,
+                        paddingHorizontal: 8,
+                        borderRadius: 8,
+                        borderWidth: 1.5,
+                        borderColor: activeQuestionTab === 2 ? colors.accent : 'rgba(255, 255, 255, 0.12)',
+                        backgroundColor: activeQuestionTab === 2 ? 'rgba(255, 209, 0, 0.14)' : 'rgba(255, 255, 255, 0.03)',
+                        alignItems: 'center',
+                      }}
+                      onPress={() => {
+                        setActiveQuestionTab(2);
+                        setAnswer('');
+                        setErrors({});
+                      }}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={{
+                        color: activeQuestionTab === 2 ? colors.accent : colors.textSecondary,
+                        fontSize: 12,
+                        fontWeight: activeQuestionTab === 2 ? '800' : '600',
+                      }}>
+                        Backup Question #2
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ) : null}
+
               {/* Question display card */}
               <View style={[styles.questionCard, {
                 backgroundColor: 'rgba(255, 209, 0, 0.06)',
                 borderColor: 'rgba(255, 209, 0, 0.22)',
               }]}>
-                <Text style={[styles.questionLabel, { color: colors.accent }]}>
-                  QUESTION
-                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <Text style={[styles.questionLabel, { color: colors.accent }]}>
+                    {activeQuestionTab === 2 ? 'BACKUP QUESTION' : 'SECURITY QUESTION'}
+                  </Text>
+                  {securityQuestion2 && (
+                    <Text style={{ color: colors.textSecondary, fontSize: 10, fontWeight: '700' }}>
+                      TAB {activeQuestionTab} OF 2
+                    </Text>
+                  )}
+                </View>
                 <Text style={[styles.questionText, { color: colors.textPrimary }]}>
-                  {securityQuestion}
+                  {activeQuestionTab === 2 ? securityQuestion2 : securityQuestion}
                 </Text>
               </View>
 
               <InputField
                 label="SECRET ANSWER"
-                placeholder="Your answer..."
+                placeholder={activeQuestionTab === 2 ? "Enter backup question answer..." : "Enter your secret answer..."}
                 value={answer}
                 onChangeText={setAnswer}
                 error={errors.answer}

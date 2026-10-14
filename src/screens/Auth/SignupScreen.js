@@ -18,14 +18,11 @@ import PhoneInputWithCountry from '../../components/common/PhoneInputWithCountry
 import { validateLocalPhone } from '../../utils/validators';
 import { DEFAULT_COUNTRY } from '../../utils/countries';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-
-const SECURITY_QUESTIONS = [
-  'What was the name of your first school?',
-  'What city were you born in?',
-  'What was your childhood nickname?',
-  'What was the name of your first pet?',
-  'What was the model of your first vehicle?',
-];
+import {
+  SECURITY_QUESTIONS,
+  DEFAULT_PRIMARY_QUESTION,
+  DEFAULT_BACKUP_QUESTION,
+} from '../../utils/securityQuestions';
 
 export default function SignupScreen({ navigation }) {
   const { colors, typography, spacing } = useTheme();
@@ -36,9 +33,18 @@ export default function SignupScreen({ navigation }) {
   const [phone, setPhone] = useState('');
   const [dialCode, setDialCode] = useState('+91');
   const [country, setCountry] = useState(DEFAULT_COUNTRY);
-  const [selectedQuestion, setSelectedQuestion] = useState(SECURITY_QUESTIONS[0]);
+  
+  // Primary Security Question
+  const [selectedQuestion, setSelectedQuestion] = useState(DEFAULT_PRIMARY_QUESTION);
   const [isQuestionDropdownOpen, setIsQuestionDropdownOpen] = useState(false);
   const [securityAnswer, setSecurityAnswer] = useState('');
+
+  // Backup Security Question (Extra recovery chance)
+  const [enableBackupQuestion, setEnableBackupQuestion] = useState(false);
+  const [selectedQuestion2, setSelectedQuestion2] = useState(DEFAULT_BACKUP_QUESTION);
+  const [isQuestion2DropdownOpen, setIsQuestion2DropdownOpen] = useState(false);
+  const [securityAnswer2, setSecurityAnswer2] = useState('');
+
   const [errors, setErrors] = useState({});
   const [isCheckingPhone, setIsCheckingPhone] = useState(false);
 
@@ -86,6 +92,15 @@ export default function SignupScreen({ navigation }) {
       newErrors.securityAnswer = 'Answer is required for recovery';
     }
 
+    if (enableBackupQuestion) {
+      if (!securityAnswer2.trim()) {
+        newErrors.securityAnswer2 = 'Backup answer is required when enabled';
+      }
+      if (selectedQuestion === selectedQuestion2) {
+        newErrors.securityQuestion2 = 'Backup question must be different from primary question';
+      }
+    }
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
@@ -99,9 +114,11 @@ export default function SignupScreen({ navigation }) {
         phone,
         randomPin,
         selectedQuestion,
-        securityAnswer,
+        securityAnswer.trim(),
         country?.name || 'India',
-        dialCode || '+91'
+        dialCode || '+91',
+        enableBackupQuestion ? selectedQuestion2 : null,
+        enableBackupQuestion ? securityAnswer2.trim() : null
       );
       setGeneratedPin(result.pin);
       setHasCopiedPin(false);
@@ -241,24 +258,33 @@ export default function SignupScreen({ navigation }) {
                 <MaterialCommunityIcons name="check-circle" size={16} color="#2A9D8F" />
               </View>
 
-              {/* Security Question Selector */}
-              <Text style={[styles.inputLabel, {
-                color: colors.textSecondary,
-                fontFamily: typography.fontFamily.body,
-                fontSize: typography.sizes.xs,
-              }]}>
-                SECURITY QUESTION
-              </Text>
+              {/* Primary Security Question Selector */}
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                <Text style={[styles.inputLabel, {
+                  color: colors.textSecondary,
+                  fontFamily: typography.fontFamily.body,
+                  fontSize: typography.sizes.xs,
+                  marginBottom: 0,
+                }]}>
+                  PRIMARY SECURITY QUESTION
+                </Text>
+                <Text style={{ color: colors.accent, fontSize: 10, fontWeight: '800', letterSpacing: 0.5 }}>
+                  STEP 1 OF 2
+                </Text>
+              </View>
 
               <TouchableOpacity
                 style={[styles.dropdownButton, {
                   backgroundColor: colors.surfaceLight || '#22222E',
-                  borderColor: colors.border,
+                  borderColor: isQuestionDropdownOpen ? colors.accent : colors.border,
                   padding: spacing.md,
                   borderRadius: spacing.borderRadius.xs,
                   marginBottom: isQuestionDropdownOpen ? spacing.xs : spacing.md,
                 }]}
-                onPress={() => setIsQuestionDropdownOpen(!isQuestionDropdownOpen)}
+                onPress={() => {
+                  setIsQuestionDropdownOpen(!isQuestionDropdownOpen);
+                  setIsQuestion2DropdownOpen(false);
+                }}
                 activeOpacity={0.8}
               >
                 <Text style={{
@@ -266,6 +292,7 @@ export default function SignupScreen({ navigation }) {
                   fontFamily: typography.fontFamily.body,
                   fontSize: 13,
                   flex: 1,
+                  marginRight: 8,
                 }}>
                   {selectedQuestion}
                 </Text>
@@ -277,16 +304,20 @@ export default function SignupScreen({ navigation }) {
               </TouchableOpacity>
 
               {isQuestionDropdownOpen && (
-                <View style={[styles.dropdownList, {
-                  backgroundColor: colors.surfaceLight || '#22222E',
-                  borderColor: colors.border,
-                  marginBottom: spacing.md,
-                }]}>
+                <ScrollView 
+                  nestedScrollEnabled
+                  style={[styles.dropdownList, {
+                    backgroundColor: colors.surfaceLight || '#22222E',
+                    borderColor: colors.accent,
+                    marginBottom: spacing.md,
+                    maxHeight: 220,
+                  }]}
+                >
                   {SECURITY_QUESTIONS.map((q, idx) => (
                     <TouchableOpacity
                       key={idx}
                       style={[styles.dropdownItem, {
-                        backgroundColor: selectedQuestion === q ? colors.yellowMuted : 'transparent',
+                        backgroundColor: selectedQuestion === q ? 'rgba(255, 209, 0, 0.15)' : 'transparent',
                         borderBottomColor: colors.border,
                         borderBottomWidth: idx < SECURITY_QUESTIONS.length - 1 ? 1 : 0,
                         padding: spacing.sm,
@@ -305,17 +336,157 @@ export default function SignupScreen({ navigation }) {
                       </Text>
                     </TouchableOpacity>
                   ))}
-                </View>
+                </ScrollView>
               )}
 
               <InputField
                 label="SECRET ANSWER"
-                placeholder="Your answer..."
+                placeholder="Your primary secret answer..."
                 value={securityAnswer}
                 onChangeText={setSecurityAnswer}
                 error={errors.securityAnswer}
                 autoCapitalize="none"
               />
+
+              {/* Backup Question Toggle Card */}
+              <TouchableOpacity
+                style={{
+                  borderWidth: 1.5,
+                  borderColor: enableBackupQuestion ? colors.accent : 'rgba(255, 255, 255, 0.12)',
+                  borderRadius: 10,
+                  padding: 12,
+                  marginTop: 6,
+                  marginBottom: 14,
+                  backgroundColor: enableBackupQuestion ? 'rgba(255, 209, 0, 0.07)' : 'rgba(255, 255, 255, 0.02)',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+                onPress={() => setEnableBackupQuestion(!enableBackupQuestion)}
+                activeOpacity={0.8}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 10 }}>
+                  <MaterialCommunityIcons
+                    name={enableBackupQuestion ? 'shield-check' : 'shield-plus-outline'}
+                    size={22}
+                    color={enableBackupQuestion ? colors.accent : colors.textSecondary}
+                  />
+                  <View style={{ marginLeft: 10, flex: 1 }}>
+                    <Text style={{ color: colors.textPrimary, fontSize: 13, fontWeight: '700' }}>
+                      Add Backup Question (Recommended)
+                    </Text>
+                    <Text style={{ color: colors.textSecondary, fontSize: 11, marginTop: 2 }}>
+                      Gives an extra recovery chance if you forget answer #1
+                    </Text>
+                  </View>
+                </View>
+                <MaterialCommunityIcons
+                  name={enableBackupQuestion ? 'checkbox-marked-circle' : 'checkbox-blank-circle-outline'}
+                  size={22}
+                  color={enableBackupQuestion ? colors.accent : colors.textSecondary}
+                />
+              </TouchableOpacity>
+
+              {/* Backup Question Fields when enabled */}
+              {enableBackupQuestion && (
+                <View style={{
+                  padding: 12,
+                  borderRadius: 10,
+                  borderWidth: 1,
+                  borderColor: 'rgba(255, 209, 0, 0.25)',
+                  backgroundColor: 'rgba(255, 209, 0, 0.03)',
+                  marginBottom: 14,
+                }}>
+                  <Text style={[styles.inputLabel, {
+                    color: colors.accent,
+                    fontFamily: typography.fontFamily.body,
+                    fontSize: typography.sizes.xs,
+                  }]}>
+                    BACKUP QUESTION (EXTRA CHANCE)
+                  </Text>
+
+                  <TouchableOpacity
+                    style={[styles.dropdownButton, {
+                      backgroundColor: colors.surfaceLight || '#22222E',
+                      borderColor: isQuestion2DropdownOpen ? colors.accent : colors.border,
+                      padding: spacing.md,
+                      borderRadius: spacing.borderRadius.xs,
+                      marginBottom: isQuestion2DropdownOpen ? spacing.xs : spacing.md,
+                    }]}
+                    onPress={() => {
+                      setIsQuestion2DropdownOpen(!isQuestion2DropdownOpen);
+                      setIsQuestionDropdownOpen(false);
+                    }}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={{
+                      color: colors.textPrimary,
+                      fontFamily: typography.fontFamily.body,
+                      fontSize: 13,
+                      flex: 1,
+                      marginRight: 8,
+                    }}>
+                      {selectedQuestion2}
+                    </Text>
+                    <MaterialCommunityIcons
+                      name={isQuestion2DropdownOpen ? 'chevron-up' : 'chevron-down'}
+                      size={20}
+                      color={colors.accent}
+                    />
+                  </TouchableOpacity>
+
+                  {isQuestion2DropdownOpen && (
+                    <ScrollView
+                      nestedScrollEnabled
+                      style={[styles.dropdownList, {
+                        backgroundColor: colors.surfaceLight || '#22222E',
+                        borderColor: colors.accent,
+                        marginBottom: spacing.md,
+                        maxHeight: 200,
+                      }]}
+                    >
+                      {SECURITY_QUESTIONS.filter(q => q !== selectedQuestion).map((q, idx) => (
+                        <TouchableOpacity
+                          key={idx}
+                          style={[styles.dropdownItem, {
+                            backgroundColor: selectedQuestion2 === q ? 'rgba(255, 209, 0, 0.15)' : 'transparent',
+                            borderBottomColor: colors.border,
+                            borderBottomWidth: idx < SECURITY_QUESTIONS.length - 2 ? 1 : 0,
+                            padding: spacing.sm,
+                          }]}
+                          onPress={() => {
+                            setSelectedQuestion2(q);
+                            setIsQuestion2DropdownOpen(false);
+                          }}
+                        >
+                          <Text style={{
+                            color: selectedQuestion2 === q ? colors.accent : colors.textPrimary,
+                            fontSize: 12,
+                            fontWeight: selectedQuestion2 === q ? '700' : '400',
+                          }}>
+                            {q}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  )}
+
+                  {errors.securityQuestion2 && (
+                    <Text style={{ color: colors.error, fontSize: 11, marginBottom: 8 }}>
+                      {errors.securityQuestion2}
+                    </Text>
+                  )}
+
+                  <InputField
+                    label="BACKUP SECRET ANSWER"
+                    placeholder="Your backup secret answer..."
+                    value={securityAnswer2}
+                    onChangeText={setSecurityAnswer2}
+                    error={errors.securityAnswer2}
+                    autoCapitalize="none"
+                  />
+                </View>
+              )}
 
               <Button
                 title="GENERATE KEY"

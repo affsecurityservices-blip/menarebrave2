@@ -147,7 +147,16 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
-  const signupWithPhone = async (phone, pin, securityQuestion, securityAnswer, country = 'India', countryCode = '+91') => {
+  const signupWithPhone = async (
+    phone,
+    pin,
+    securityQuestion,
+    securityAnswer,
+    country = 'India',
+    countryCode = '+91',
+    securityQuestion2 = null,
+    securityAnswer2 = null
+  ) => {
     setIsLoading(true);
     try {
       const cleanPhone = phone.replace(/[^0-9]/g, '');
@@ -158,7 +167,6 @@ export const AuthProvider = ({ children }) => {
       const fullPhoneDisplay = `${countryCode} ${cleanPhone}`.trim();
       const fullCleanPhone = cleanDial ? `${cleanDial}${cleanPhone}` : cleanPhone;
       const email = `${fullCleanPhone}@mab.app`;
-      const internalPassword = `${finalPin}_mab`;
 
       // Register directly via server-side RPC (zero emails sent, zero rate limits)
       const { data: regData, error: regError } = await supabase.rpc('register_phone_user', {
@@ -172,6 +180,8 @@ export const AuthProvider = ({ children }) => {
         p_avatar: onboardingState.avatar || 'batman',
         p_age_range: onboardingState.ageRange || null,
         p_interests: onboardingState.interests || null,
+        p_security_question_2: securityQuestion2 || null,
+        p_security_answer_2: securityAnswer2 || null,
       });
 
       if (regError) throw regError;
@@ -248,15 +258,30 @@ export const AuthProvider = ({ children }) => {
         p_user_id: user.id,
       });
       if (error || !data?.success) {
-        return user.securityQuestion || null;
+        return {
+          question: user.securityQuestion || null,
+          question_2: null,
+          has_backup_question: false,
+        };
       }
-      return data.question;
+      return data;
     } catch {
-      return user?.securityQuestion || null;
+      return {
+        question: user?.securityQuestion || null,
+        question_2: null,
+        has_backup_question: false,
+      };
     }
   };
 
-  const updatePasswordWithQuestion = async (answer, newPin) => {
+  const updatePasswordWithQuestion = async (
+    answer,
+    newPin,
+    newQ1 = null,
+    newA1 = null,
+    newQ2 = null,
+    newA2 = null
+  ) => {
     if (!user?.id) throw new Error('You must be logged in to update your security PIN.');
     const cleanPin = (newPin || '').trim();
     if (!cleanPin || cleanPin.length !== 5 || !/^\d+$/.test(cleanPin)) {
@@ -266,6 +291,10 @@ export const AuthProvider = ({ children }) => {
       p_answer: answer,
       p_new_pin: cleanPin,
       p_user_id: user.id,
+      p_new_question_1: newQ1 || null,
+      p_new_answer_1: newA1 || null,
+      p_new_question_2: newQ2 || null,
+      p_new_answer_2: newA2 || null,
     });
     if (error) throw error;
     if (!data?.success) {
