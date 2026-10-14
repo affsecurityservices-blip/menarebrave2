@@ -13,6 +13,7 @@ import BlockedUsersScreen from '../screens/Settings/BlockedUsersScreen';
 import ReportHistoryScreen from '../screens/Settings/ReportHistoryScreen';
 import ThemeScreen from '../screens/Settings/ThemeScreen';
 import DailyCheckInScreen from '../screens/MoodCheckIn/DailyCheckInScreen';
+import DailyStreakScreen from '../screens/MoodCheckIn/DailyStreakScreen';
 import MoodHistoryScreen from '../screens/MoodCheckIn/MoodHistoryScreen';
 import CrisisSupportScreen from '../screens/SafetyCrisis/CrisisSupportScreen';
 import SubscriptionScreen from '../screens/Premium/SubscriptionScreen';
@@ -58,6 +59,7 @@ export default function ProfileStackNavigator() {
       <Stack.Screen name="ReportHistory" component={ReportHistoryScreen} options={{ title: 'REPORTS' }} />
       <Stack.Screen name="Theme" component={ThemeScreen} options={{ title: 'THEME MODE' }} />
       <Stack.Screen name="DailyCheckIn" component={DailyCheckInScreen} options={{ title: 'DAILY VIBE' }} />
+      <Stack.Screen name="DailyStreak" component={DailyStreakScreen} options={{ title: 'DISCIPLINE & STREAK' }} />
       <Stack.Screen name="MoodHistory" component={MoodHistoryScreen} options={{ title: 'MOOD MATRIX' }} />
       <Stack.Screen name="CrisisSupport" component={CrisisSupportScreen} options={{ title: 'CRISIS SUPPORT' }} />
       <Stack.Screen name="Subscription" component={SubscriptionScreen} options={{ title: 'GOLD MEMBER' }} />

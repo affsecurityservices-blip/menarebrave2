@@ -1,12 +1,12 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-export default function StreakBadge({ count }) {
+export default function StreakBadge({ count, onPress }) {
   const { colors, typography } = useTheme();
 
-  return (
+  const content = (
     <View style={[styles.badge, { backgroundColor: colors.yellowMuted, borderColor: colors.accent }]}>
       <MaterialCommunityIcons name="fire" size={14} color={colors.accent} />
       <Text style={[styles.text, {
@@ -19,8 +19,21 @@ export default function StreakBadge({ count }) {
       }]}>
         {count} DAY STREAK
       </Text>
+      {Boolean(onPress) && (
+        <MaterialCommunityIcons name="chevron-right" size={13} color={colors.accent} style={{ marginLeft: 2 }} />
+      )}
     </View>
   );
+
+  if (onPress) {
+    return (
+      <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
+        {content}
+      </TouchableOpacity>
+    );
+  }
+
+  return content;
 }
 
 const styles = StyleSheet.create({

@@ -7,6 +7,7 @@ import PostDetailScreen from '../screens/Feed/PostDetailScreen';
 import SearchScreen from '../screens/Feed/SearchScreen';
 import OtherUserProfileScreen from '../screens/Profile/OtherUserProfileScreen';
 import NotificationsScreen from '../screens/Notifications/NotificationsScreen';
+import DailyStreakScreen from '../screens/MoodCheckIn/DailyStreakScreen';
 import { useTheme } from '../context/ThemeContext';
 
 const Stack = createNativeStackNavigator();
@@ -70,6 +71,11 @@ export default function FeedStackNavigator() {
         name="Notifications"
         component={NotificationsScreen}
         options={{ title: 'NOTIFICATIONS' }}
+      />
+      <Stack.Screen
+        name="DailyStreak"
+        component={DailyStreakScreen}
+        options={{ title: 'DISCIPLINE & STREAK' }}
       />
     </Stack.Navigator>
   );
