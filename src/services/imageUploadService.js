@@ -131,6 +131,8 @@ export async function uploadImageToImgBB(asset) {
       name: safeFileName,
       type,
     });
+  }
+
   const endpoint = `${IMGBB_UPLOAD_URL}?key=${encodeURIComponent(IMGBB_API_KEY)}`;
 
   const response = await fetch(endpoint, {
