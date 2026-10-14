@@ -220,15 +220,15 @@ export default function CreatePostScreen({ navigation, route }) {
           inputStyle={{ height: 140, textAlignVertical: 'top' }}
         />
 
-        {/* Tactical Image Attachment Section */}
+        {/* Image Attachment Section */}
         {isUploadingImage ? (
           <View style={[styles.imageUploadBox, { borderColor: colors.accent, backgroundColor: 'rgba(255, 209, 0, 0.06)' }]}>
             <ActivityIndicator size="small" color={colors.accent} style={{ marginBottom: 6 }} />
             <Text style={{ color: colors.accent, fontWeight: '800', fontSize: 12, letterSpacing: 0.5 }}>
-              SECURING & UPLOADING IMAGE...
+              UPLOADING IMAGE...
             </Text>
             <Text style={{ color: colors.textSecondary, fontSize: 11, marginTop: 2 }}>
-              Inspecting binary signature & hosting on ImgBB vault
+              Please wait while your image is being uploaded
             </Text>
           </View>
         ) : attachedImage ? (
@@ -241,9 +241,9 @@ export default function CreatePostScreen({ navigation, route }) {
             />
             {/* Format Badge */}
             <View style={[styles.imageBadge, { backgroundColor: 'rgba(0, 0, 0, 0.8)', borderColor: colors.accent }]}>
-              <MaterialCommunityIcons name="shield-check" size={13} color={colors.accent} style={{ marginRight: 4 }} />
+              <MaterialCommunityIcons name="check-circle" size={13} color={colors.accent} style={{ marginRight: 4 }} />
               <Text style={[styles.imageBadgeText, { color: colors.accent }]}>
-                {attachedImage.format || 'JPG'} VERIFIED
+                {attachedImage.format || 'IMAGE'} ATTACHED
               </Text>
             </View>
             {/* Delete / Remove Button */}
@@ -266,10 +266,10 @@ export default function CreatePostScreen({ navigation, route }) {
             </View>
             <View style={{ marginLeft: 12, flex: 1 }}>
               <Text style={[styles.attachBtnTitle, { color: colors.textPrimary, fontFamily: typography.fontFamily.header }]}>
-                ATTACH IMAGE (JPG / PNG)
+                ATTACH IMAGE
               </Text>
               <Text style={[styles.attachBtnSub, { color: colors.textSecondary }]}>
-                JPG & PNG only • Max 5MB • Safe ImgBB vault
+                JPG, JPEG or PNG • Max 5MB
               </Text>
             </View>
             <MaterialCommunityIcons name="plus" size={20} color={colors.accent} />
